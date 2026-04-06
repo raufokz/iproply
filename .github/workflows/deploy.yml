@@ -28,14 +28,24 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -p "$SSH_PORT" "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
 
+      - name: Test SSH connectivity
+        env:
+          SSH_HOST: ${{ secrets.HOSTINGER_HOST }}
+          SSH_PORT: ${{ secrets.HOSTINGER_PORT }}
+          SSH_USER: ${{ secrets.HOSTINGER_USER }}
+        run: |
+          set -euo pipefail
+          echo "Testing ssh to $SSH_USER@$SSH_HOST:$SSH_PORT ..."
+          ssh -4 -o ConnectTimeout=15 -o BatchMode=yes -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "echo ok"
+
       - name: Sync files to server
         run: |
+          export RSYNC_RSH="ssh -4 -p ${{ secrets.HOSTINGER_PORT }} -o ConnectTimeout=20"
           rsync -avz --delete \
             --exclude ".git" \
             --exclude ".github" \
             --exclude "node_modules" \
             --exclude ".env" \
-            -e "ssh -p ${{ secrets.HOSTINGER_PORT }}" \
             ./ ${{ secrets.HOSTINGER_USER }}@${{ secrets.HOSTINGER_HOST }}:${{ secrets.HOSTINGER_PATH }}
 
       # Uncomment if you need Composer on the server
