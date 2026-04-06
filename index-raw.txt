@@ -1,0 +1,345 @@
+﻿<?php
+/**
+ * iProply - Homepage
+ */
+
+require_once 'config/config.php';
+require_once 'includes/Database.php';
+require_once 'includes/Property.php';
+
+// Set current page
+$currentPage = 'home';
+$pageTitle = 'Find Your Dream Home';
+
+// Initialize Property model
+$propertyModel = new Property();
+
+// Get featured properties
+$featuredProperties = $propertyModel->getFeatured(6);
+
+// Get latest properties
+$latestProperties = $propertyModel->getLatest(6);
+
+// Get property types for search
+$propertyTypes = $propertyModel->getPropertyTypes();
+
+// Include header
+include 'partials/header.php';
+?>
+
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-grid">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    Find Your <span>Dream Home</span> Today
+                </h1>
+                <p class="hero-subtitle">
+                    Discover thousands of properties for sale and rent across the country. 
+                    Your perfect home is just a click away.
+                </p>
+                
+                <!-- Search Bar -->
+                <form action="listings.php" method="GET" class="hero-search">
+                    <input type="text" name="keyword" placeholder="Enter location, property type..." required>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </form>
+                
+                <!-- Stats -->
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <div class="stat-number" data-counter="2500" data-suffix="+">0</div>
+                        <div class="stat-label">Properties</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" data-counter="150" data-suffix="+">0</div>
+                        <div class="stat-label">Agents</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" data-counter="10000" data-suffix="+">0</div>
+                        <div class="stat-label">Happy Clients</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="hero-image">
+                <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&h=600&fit=crop" alt="Real Estate Agent">
+                
+                <!-- Floating Cards -->
+                <div class="hero-card hero-card-1">
+                    <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=100&h=100&fit=crop" alt="Property">
+                    <div class="hero-card-content">
+                        <div class="hero-card-title">Modern Villa</div>
+                        <div class="hero-card-text">$750,000</div>
+                    </div>
+                </div>
+                
+                <div class="hero-card hero-card-2">
+                    <div class="hero-card-content">
+                        <div class="hero-card-title">â˜… 4.9 Rating</div>
+                        <div class="hero-card-text">500+ Reviews</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Listings Section -->
+<section class="section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-label">Featured Listings</span>
+            <h2 class="section-title">Discover Our Handpicked Properties</h2>
+            <p class="section-subtitle">
+                Browse through our exclusive selection of premium properties curated just for you
+            </p>
+        </div>
+        
+        <div class="property-grid">
+            <?php foreach ($featuredProperties as $property): ?>
+                <div class="property-card">
+                    <div class="property-image">
+                        <?php if ($property['primary_image']): ?>
+                            <img src="<?php echo UPLOAD_URL . 'properties/' . $property['primary_image']; ?>" alt="<?php echo sanitize($property['title']); ?>">
+                        <?php else: ?>
+                            <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&h=400&fit=crop" alt="Property">
+                        <?php endif; ?>
+                        
+                        <span class="property-badge badge-<?php echo $property['status']; ?>">
+                            For <?php echo ucfirst($property['status']); ?>
+                        </span>
+                        
+                        <?php if ($property['is_featured']): ?>
+                            <span class="property-badge badge-featured" style="left: auto; right: 15px;">Featured</span>
+                        <?php endif; ?>
+                        
+                        <div class="property-price">
+                            <?php echo format_price($property['price'], $property['status']); ?>
+                        </div>
+                    </div>
+                    
+                    <div class="property-content">
+                        <h3 class="property-title"><?php echo sanitize($property['title']); ?></h3>
+                        <div class="property-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <?php echo sanitize($property['city']) . ', ' . sanitize($property['state']); ?>
+                        </div>
+                        <div class="property-features">
+                            <?php if ($property['bedrooms'] > 0): ?>
+                                <div class="property-feature">
+                                    <i class="fas fa-bed"></i>
+                                    <span><?php echo $property['bedrooms']; ?> Beds</span>
+                                </div>
+                            <?php endif; ?>
+                            <?php if ($property['bathrooms'] > 0): ?>
+                                <div class="property-feature">
+                                    <i class="fas fa-bath"></i>
+                                    <span><?php echo $property['bathrooms']; ?> Baths</span>
+                                </div>
+                            <?php endif; ?>
+                            <?php if ($property['area_sqft'] > 0): ?>
+                                <div class="property-feature">
+                                    <i class="fas fa-ruler-combined"></i>
+                                    <span><?php echo number_format($property['area_sqft']); ?> sqft</span>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+        
+        <div class="text-center mt-2xl">
+            <a href="listings.php" class="btn btn-primary btn-lg">
+                View All Properties <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- About Section -->
+<section class="section section-bg">
+    <div class="container">
+        <div class="about-grid">
+            <div class="about-image">
+                <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=600&h=500&fit=crop" alt="About Us">
+                <div class="about-image-frame"></div>
+            </div>
+            
+            <div class="about-content">
+                <span class="section-label">About Us</span>
+                <h2>We're on a Mission to Change View of Real Estate Field</h2>
+                <p>
+                    With over 15 years of experience in the real estate industry, we've helped thousands 
+                    of families find their perfect homes. Our team of dedicated professionals understands 
+                    that buying or selling a property is more than just a transaction.
+                </p>
+                <p>
+                    We pride ourselves on providing personalized service, expert guidance, and transparent 
+                    communication throughout your real estate journey.
+                </p>
+                
+                <ul class="about-checklist">
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        Expert market knowledge and insights
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        Personalized property matching
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        End-to-end transaction support
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        Post-sale assistance and guidance
+                    </li>
+                </ul>
+                
+                <div class="about-stats">
+                    <div class="stat-item">
+                        <div class="stat-number" data-counter="15" data-suffix="+">0</div>
+                        <div class="stat-label">Years Experience</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" data-counter="2500" data-suffix="+">0</div>
+                        <div class="stat-label">Properties Sold</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" data-counter="98" data-suffix="%">0</div>
+                        <div class="stat-label">Client Satisfaction</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-label">How It Works</span>
+            <h2 class="section-title">Simple Steps to Your New Home</h2>
+            <p class="section-subtitle">
+                We've streamlined the process to make your property journey as smooth as possible
+            </p>
+        </div>
+        
+        <div class="steps-grid">
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <h3>Search</h3>
+                <p>Browse thousands of listings using our advanced filters to find properties that match your criteria.</p>
+            </div>
+            
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <h3>Visit</h3>
+                <p>Schedule viewings with our expert agents who will guide you through each property.</p>
+            </div>
+            
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <h3>Move In</h3>
+                <p>Complete the paperwork and move into your dream home with our full support.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Latest Listings Section -->
+<section class="section section-bg">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-label">Latest Listings</span>
+            <h2 class="section-title">Recently Added Properties</h2>
+            <p class="section-subtitle">
+                Check out the newest properties added to our platform
+            </p>
+        </div>
+        
+        <div class="property-grid">
+            <?php foreach ($latestProperties as $property): ?>
+                <div class="property-card">
+                    <a href="property.php?slug=<?php echo $property['slug']; ?>" style="text-decoration: none; color: inherit;">
+                        <div class="property-image">
+                            <?php if ($property['primary_image']): ?>
+                                <img src="<?php echo UPLOAD_URL . 'properties/' . $property['primary_image']; ?>" alt="<?php echo sanitize($property['title']); ?>">
+                            <?php else: ?>
+                                <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&h=400&fit=crop" alt="Property">
+                            <?php endif; ?>
+                            
+                            <span class="property-badge badge-<?php echo $property['status']; ?>">
+                                For <?php echo ucfirst($property['status']); ?>
+                            </span>
+                            
+                            <div class="property-price">
+                                <?php echo format_price($property['price'], $property['status']); ?>
+                            </div>
+                        </div>
+                        
+                        <div class="property-content">
+                            <h3 class="property-title"><?php echo sanitize($property['title']); ?></h3>
+                            <div class="property-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <?php echo sanitize($property['city']) . ', ' . sanitize($property['state']); ?>
+                            </div>
+                            <div class="property-features">
+                                <?php if ($property['bedrooms'] > 0): ?>
+                                    <div class="property-feature">
+                                        <i class="fas fa-bed"></i>
+                                        <span><?php echo $property['bedrooms']; ?> Beds</span>
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($property['bathrooms'] > 0): ?>
+                                    <div class="property-feature">
+                                        <i class="fas fa-bath"></i>
+                                        <span><?php echo $property['bathrooms']; ?> Baths</span>
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($property['area_sqft'] > 0): ?>
+                                    <div class="property-feature">
+                                        <i class="fas fa-ruler-combined"></i>
+                                        <span><?php echo number_format($property['area_sqft']); ?> sqft</span>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="section">
+    <div class="container">
+        <div class="cta-section">
+            <div class="cta-grid">
+                <div class="cta-content">
+                    <h2>Ready to Find Your Dream Home?</h2>
+                    <p>Get in touch with our expert agents today and start your property journey.</p>
+                </div>
+                <div class="cta-action">
+                    <a href="contact.php" class="btn btn-white btn-lg">Contact Us Today</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<?php
+// Include footer
+include 'partials/footer.php';
+?>
+
+<parameter= {"file_path": "/mnt/okcomputer/output/iproply/listings.php", "content": "<?php\n/**\n * Realty - Property Listings Page\n */\n\nrequire_once 'config/config.php';\nrequire_once 'includes/Database.php';\nrequire_once 'includes/Property.php';\n\n// Set current page\n$currentPage = 'listings';\n$pageTitle = 'Property Listings';\n\n// Initialize Property model\n$propertyModel = new Property();\n\n// Get filter parameters\n$filters = [\n    'keyword' => $_GET['keyword'] ?? '',\n    'city' => $_GET['city'] ?? '',\n    'state' => $_GET['state'] ?? '',\n    'property_type' => $_GET['type'] ?? '',\n    'status_type' => $_GET['status'] ?? '',\n    'min_price' => $_GET['min_price'] ?? '',\n    'max_price' => $_GET['max_price'] ?? '',\n    'bedrooms' => $_GET['bedrooms'] ?? '',\n    'bathrooms' => $_GET['bathrooms'] ?? ''\n];\n\n// Remove empty filters\n$filters = array_filter($filters);\n\n// Pagination\n$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;\n$perPage = ITEMS_PER_PAGE;\n\n// Get properties\n$properties = $propertyModel->getAll($filters, $page, $perPage);\n$totalProperties = $propertyModel->getTotalCount($filters);\n$totalPages = ceil($totalProperties / $perPage);\n\n// Get property types and states for filters\n$propertyTypes = $propertyModel->getPropertyTypes();\n$states = $propertyModel->getStates();\n\n// Include header\ninclude 'partials/header.php';\n?>\n\n<!-- Page Header -->\n<header class=\"page-header\">\n    <div class=\"container\">\n        <h1>Property Listings</h1>\n        <p>Find your perfect property from our extensive collection</p>\n    </div>\n</header>\n\n<!-- Filter Bar -->\n<section class=\"filter-bar\">\n    <div class=\"container\">\n        <form action=\"listings.php\" method=\"GET\" class=\"filter-form\">\n            <div class=\"filter-group\">\n                <label>Location</label>\n                <input type=\"text\" name=\"keyword\" placeholder=\"City, state, or keyword\" value=\"<?php echo sanitize($_GET['keyword'] ?? ''); ?>\">\n            </div>\n            \n            <div class=\"filter-group\">\n                <label>Property Type</label>\n                <select name=\"type\">\n                    <option value=\"\">All Types</option>\n                    <?php foreach ($propertyTypes as $type): ?>\n                        <option value=\"<?php echo $type['id']; ?>\" <?php echo ($_GET['type'] ?? '') == $type['id'] ? 'selected' : ''; ?>>\n                            <?php echo sanitize($type['name']); ?>\n                        </option>\n                    <?php endforeach; ?>\n                </select>\n            </div>\n            \n            <div class=\"filter-group\">\n                <label>Status</label>\n                <select name=\"status\">\n                    <option value=\"\">All</option>\n                    <option value=\"sale\" <?php echo ($_GET['status'] ?? '') == 'sale' ? 'selected' : ''; ?>>For Sale</option>\n                    <option value=\"rent\" <?php echo ($_GET['status'] ?? '') == 'rent' ? 'selected' : ''; ?>>For Rent</option>\n                </select>\n            </div>\n            \n            <div class=\"filter-group\">\n                <label>Min Price</label>\n                <input type=\"number\" name=\"min_price\" placeholder=\"$0\" value=\"<?php echo sanitize($_GET['min_price'] ?? ''); ?>\">\n            </div>\n            \n            <div class=\"filter-group\">\n                <label>Max Price</label>\n                <input type=\"number\" name=\"max_price\" placeholder=\"No max\" value=\"<?php echo sanitize($_GET['max_price'] ?? ''); ?>\">\n            </div>\n            \n            <div class=\"filter-actions\">\n                <button type=\"submit\" class=\"btn btn-primary\">\n                    <i class=\"fas fa-search\"></i> Search\n                </button>\n                <a href=\"listings.php\" class=\"btn btn-outline\">Reset</a>\n            </div>\n        </form>\n    </div>\n</section>\n\n<!-- Listings Section -->\n<section class=\"section\">\n    <div class=\"container\">\n        <div class=\"listings-header\" style=\"display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;\">\n            <p style=\"color: var(--text-secondary);\">\n                Showing <?php echo count($properties); ?> of <?php echo $totalProperties; ?> properties\n            </p>\n        </div>\n        \n        <?php if (empty($properties)): ?>\n            <div class=\"empty-state\">\n                <i class=\"fas fa-home\"></i>\n                <h3>No properties found</h3>\n                <p>Try adjusting your search criteria to find more properties.</p>\n            </div>\n        <?php else: ?>\n            <div class=\"property-grid\">\n                <?php foreach ($properties as $property): ?>\n                    <div class=\"property-card\">\n                        <a href=\"property.php?slug=<?php echo $property['slug']; ?>\" style=\"text-decoration: none; color: inherit;\">\n                            <div class=\"property-image\">\n                                <?php if ($property['primary_image']): ?>\n                                    <img src=\"<?php echo UPLOAD_URL . 'properties/' . $property['primary_image']; ?>\" alt=\"<?php echo sanitize($property['title']); ?>\">\n                                <?php else: ?>\n                                    <img src=\"https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&h=400&fit=crop\" alt=\"Property\">\n                                <?php endif; ?>\n                                \n                                <span class=\"property-badge badge-<?php echo $property['status']; ?>\">\n                                    For <?php echo ucfirst($property['status']); ?>\n                                </span>\n                                \n                                <?php if ($property['is_featured']): ?>\n                                    <span class=\"property-badge badge-featured\" style=\"left: auto; right: 15px;\">Featured</span>\n                                <?php endif; ?>\n                                \n                                <div class=\"property-price\">\n                                    <?php echo format_price($property['price'], $property['status']); ?>\n                                </div>\n                            </div>\n                            \n                            <div class=\"property-content\">\n                                <h3 class=\"property-title\"><?php echo sanitize($property['title']); ?></h3>\n                                <div class=\"property-location\">\n                                    <i class=\"fas fa-map-marker-alt\"></i>\n                                    <?php echo sanitize($property['city']) . ', ' . sanitize($property['state']); ?>\n                                </div>\n                                <div class=\"property-features\">\n                                    <?php if ($property['bedrooms'] > 0): ?>\n                                        <div class=\"property-feature\">\n                                            <i class=\"fas fa-bed\"></i>\n                                            <span><?php echo $property['bedrooms']; ?> Beds</span>\n                                        </div>\n                                    <?php endif; ?>\n                                    <?php if ($property['bathrooms'] > 0): ?>\n                                        <div class=\"property-feature\">\n                                            <i class=\"fas fa-bath\"></i>\n                                            <span><?php echo $property['bathrooms']; ?> Baths</span>\n                                        </div>\n                                    <?php endif; ?>\n                                    <?php if ($property['area_sqft'] > 0): ?>\n                                        <div class=\"property-feature\">\n                                            <i class=\"fas fa-ruler-combined\"></i>\n                                            <span><?php echo number_format($property['area_sqft']); ?> sqft</span>\n                                        </div>\n                                    <?php endif; ?>\n                                </div>\n                            </div>\n                        </a>\n                    </div>\n                <?php endforeach; ?>\n            </div>\n            \n            <!-- Pagination -->\n            <?php if ($totalPages > 1): ?>\n                <div class=\"pagination\">\n                    <?php if ($page > 1): ?>\n                        <a href=\"?<?php echo http_build_query(array_merge($_GET, ['page' => $page - 1])); ?>\">\n                            <i class=\"fas fa-chevron-left\"></i>\n                        </a>\n                    <?php else: ?>\n                        <span class=\"disabled\"><i class=\"fas fa-chevron-left\"></i></span>\n                    <?php endif; ?>\n                    \n                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>\n                        <?php if ($i == $page): ?>\n                            <span class=\"active\"><?php echo $i; ?></span>\n                        <?php else: ?>\n                            <a href=\"?<?php echo http_build_query(array_merge($_GET, ['page' => $i])); ?>\"><?php echo $i; ?></a>\n                        <?php endif; ?>\n                    <?php endfor; ?>\n                    \n                    <?php if ($page < $totalPages): ?>\n                        <a href=\"?<?php echo http_build_query(array_merge($_GET, ['page' => $page + 1])); ?>\">\n                            <i class=\"fas fa-chevron-right\"></i>\n                        </a>\n                    <?php else: ?>\n                        <span class=\"disabled\"><i class=\"fas fa-chevron-right\"></i></span>\n                    <?php endif; ?>\n                </div>\n            <?php endif; ?>\n        <?php endif; ?>\n    </div>\n</section>\n\n<?php\n// Include footer\ninclude 'partials/footer.php';\n?>
+
