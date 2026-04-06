@@ -23,10 +23,10 @@ if ($_SERVER['HTTP_HOST'] === 'localhost' || $_SERVER['HTTP_HOST'] === '127.0.0.
 }
 
 // Database Configuration
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'realty_db');
-define('DB_USER', 'root');
-define('DB_PASS', '');
+define('DB_HOST', '127.0.0.1');
+define('DB_NAME', 'u867057961_realty_db');
+define('DB_USER', 'u867057961_iproply');
+define('DB_PASS', 'Sales@SoftoSol77');
 define('DB_CHARSET', 'utf8mb4');
 define('DB_PREFIX', '');
 
