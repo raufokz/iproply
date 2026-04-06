@@ -146,7 +146,7 @@ $propertyTypes = $propertyModel->getPropertyTypes();
                        class="nav-link <?php echo $currentPage === 'agents' ? 'active' : ''; ?>"
                        role="menuitem"
                        <?php echo $currentPage === 'agents' ? 'aria-current="page"' : ''; ?>>
-                        Agents
+                        Agents for Sale
                     </a>
                 </li>
 
