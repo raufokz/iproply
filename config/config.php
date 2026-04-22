@@ -14,7 +14,8 @@ define('APP_NAME', 'iProply');
 define('APP_VERSION', '1.0.0');
 
 // Auto-detect environment and set URL
-if ($_SERVER['HTTP_HOST'] === 'localhost' || $_SERVER['HTTP_HOST'] === '127.0.0.1') {
+$httpHost = $_SERVER['HTTP_HOST'] ?? 'localhost';
+if (PHP_SAPI === 'cli' || $httpHost === 'localhost' || $httpHost === '127.0.0.1') {
     define('APP_URL', 'http://localhost/iproply'); // Local development
     define('APP_ENV', 'development');
 } else {
@@ -23,10 +24,19 @@ if ($_SERVER['HTTP_HOST'] === 'localhost' || $_SERVER['HTTP_HOST'] === '127.0.0.
 }
 
 // Database Configuration
-define('DB_HOST', '127.0.0.1');
-define('DB_NAME', 'u867057961_realty_db');
-define('DB_USER', 'u867057961_iproply');
-define('DB_PASS', 'Sales@SoftoSol77');
+if (APP_ENV === 'development') {
+    // Local development database credentials
+    define('DB_HOST', '127.0.0.1');
+    define('DB_NAME', 'realty');
+    define('DB_USER', 'root');
+    define('DB_PASS', '');
+} else {
+    // Production database credentials
+    define('DB_HOST', '127.0.0.1');
+    define('DB_NAME', 'u867057961_realty_db');
+    define('DB_USER', 'u867057961_iproply');
+    define('DB_PASS', 'Sales@SoftoSol77');
+}
 define('DB_CHARSET', 'utf8mb4');
 define('DB_PREFIX', '');
 

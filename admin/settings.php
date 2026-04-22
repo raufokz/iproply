@@ -140,6 +140,9 @@ $pageTitle = 'Settings';
             <a href="inquiries.php">
                 <i class="fas fa-envelope"></i> Inquiries
             </a>
+            <a href="blogs.php">
+                <i class="fas fa-blog"></i> Blogs
+            </a>
             <a href="settings.php" class="active">
                 <i class="fas fa-cog"></i> Settings
             </a>

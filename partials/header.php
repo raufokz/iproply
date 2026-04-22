@@ -146,7 +146,7 @@ $propertyTypes = $propertyModel->getPropertyTypes();
                        class="nav-link <?php echo $currentPage === 'agents' ? 'active' : ''; ?>"
                        role="menuitem"
                        <?php echo $currentPage === 'agents' ? 'aria-current="page"' : ''; ?>>
-                        Agents for Sale
+                        Preferred Agents
                     </a>
                 </li>
 
@@ -165,6 +165,15 @@ $propertyTypes = $propertyModel->getPropertyTypes();
                        role="menuitem"
                        <?php echo $currentPage === 'contact' ? 'aria-current="page"' : ''; ?>>
                         Contact
+                    </a>
+                </li>
+
+                <li class="nav-item" role="none">
+                    <a href="<?php echo base_url('blog.php'); ?>"
+                       class="nav-link <?php echo $currentPage === 'blog' ? 'active' : ''; ?>"
+                       role="menuitem"
+                       <?php echo $currentPage === 'blog' ? 'aria-current="page"' : ''; ?>>
+                        Blog
                     </a>
                 </li>
 
@@ -248,6 +257,7 @@ $propertyTypes = $propertyModel->getPropertyTypes();
         <li><a href="<?php echo base_url('agents.php'); ?>"   <?php echo $currentPage==='agents'   ? 'aria-current="page"' : ''; ?>>Agents</a></li>
         <li><a href="<?php echo base_url('about.php'); ?>"    <?php echo $currentPage==='about'    ? 'aria-current="page"' : ''; ?>>About</a></li>
         <li><a href="<?php echo base_url('contact.php'); ?>"  <?php echo $currentPage==='contact'  ? 'aria-current="page"' : ''; ?>>Contact</a></li>
+        <li><a href="<?php echo base_url('blog.php'); ?>"     <?php echo $currentPage==='blog'     ? 'aria-current="page"' : ''; ?>>Blog</a></li>
     </ul>
 
     <!-- CTA buttons -->
