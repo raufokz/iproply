@@ -60,8 +60,9 @@ include 'partials/header.php';
                                     
                                     <!-- Blog Image -->
                                     <div style="position: relative; height: 350px; overflow: hidden; background: var(--warm-200);">
-                                        <?php if (!empty($post['cover_image'])): ?>
-                                            <img src="<?php echo (strpos($post['cover_image'], 'http') === 0) ? sanitize($post['cover_image']) : asset_url($post['cover_image']); ?>" alt="<?php echo sanitize($post['title']); ?>" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                        <?php $cover_image = $post['cover_image'] ?? ''; ?>
+                                        <?php if (!empty($cover_image)): ?>
+                                            <img src="<?php echo (strpos($cover_image, 'http') === 0) ? sanitize($cover_image) : asset_url($cover_image); ?>" alt="<?php echo sanitize($post['title']); ?>" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
                                         <?php else: ?>
                                             <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: var(--navy-800); color: var(--gold-200);">
                                                 <i class="fas fa-image fa-3x"></i>
@@ -152,8 +153,9 @@ include 'partials/header.php';
                             <?php foreach($recentPosts as $rpost): ?>
                             <div style="display: flex; gap: 1rem; align-items: center;">
                                 <div style="width: 70px; height: 70px; border-radius: 8px; overflow: hidden; flex-shrink: 0; background: var(--warm-200);">
-                                    <?php if (!empty($rpost['cover_image'])): ?>
-                                        <img src="<?php echo (strpos($rpost['cover_image'], 'http') === 0) ? sanitize($rpost['cover_image']) : asset_url($rpost['cover_image']); ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                                    <?php $rpost_cover = $rpost['cover_image'] ?? ''; ?>
+                                    <?php if (!empty($rpost_cover)): ?>
+                                        <img src="<?php echo (strpos($rpost_cover, 'http') === 0) ? sanitize($rpost_cover) : asset_url($rpost_cover); ?>" style="width: 100%; height: 100%; object-fit: cover;">
                                     <?php else: ?>
                                         <i class="fas fa-image" style="color: var(--gold-200); display: flex; align-items: center; justify-content: center; height: 100%;"></i>
                                     <?php endif; ?>

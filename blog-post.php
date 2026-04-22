@@ -26,9 +26,10 @@ include 'partials/header.php';
 
 <!-- Post Hero Section -->
 <section style="position: relative; padding: 160px 0 80px; background: var(--navy-900); color: white; overflow: hidden;">
-    <?php if (!empty($post['cover_image'])): ?>
+    <?php $post_cover = $post['cover_image'] ?? ''; ?>
+    <?php if (!empty($post_cover)): ?>
         <div style="position: absolute; inset: 0; z-index: 0;">
-            <img src="<?php echo (strpos($post['cover_image'], 'http') === 0) ? sanitize($post['cover_image']) : asset_url($post['cover_image']); ?>" alt="" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.35;">
+            <img src="<?php echo (strpos($post_cover, 'http') === 0) ? sanitize($post_cover) : asset_url($post_cover); ?>" alt="" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.35;">
             <div style="position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(4,20,39,0.8) 0%, rgba(4,20,39,1) 100%);"></div>
         </div>
     <?php endif; ?>
@@ -157,8 +158,9 @@ include 'partials/header.php';
                             <?php foreach($recentPosts as $rpost): ?>
                             <div style="display: flex; gap: 1rem; align-items: center;">
                                 <div style="width: 70px; height: 70px; border-radius: 8px; overflow: hidden; flex-shrink: 0; background: var(--warm-200);">
-                                    <?php if (!empty($rpost['cover_image'])): ?>
-                                        <img src="<?php echo (strpos($rpost['cover_image'], 'http') === 0) ? sanitize($rpost['cover_image']) : asset_url($rpost['cover_image']); ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                                    <?php $rpost_cover = $rpost['cover_image'] ?? ''; ?>
+                                    <?php if (!empty($rpost_cover)): ?>
+                                        <img src="<?php echo (strpos($rpost_cover, 'http') === 0) ? sanitize($rpost_cover) : asset_url($rpost_cover); ?>" style="width: 100%; height: 100%; object-fit: cover;">
                                     <?php else: ?>
                                         <i class="fas fa-image" style="color: var(--gold-200); display: flex; align-items: center; justify-content: center; height: 100%;"></i>
                                     <?php endif; ?>
