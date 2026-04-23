@@ -183,7 +183,7 @@ $flashMessages = get_flash_messages();
     <title><?php echo $pageTitle; ?> - <?php echo APP_NAME; ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -203,12 +203,13 @@ $flashMessages = get_flash_messages();
             --shadow-lg:     0 8px 32px rgba(0,0,0,.12);
             --radius:        10px;
             --radius-lg:     16px;
+            --font-family:   'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: 'DM Sans', sans-serif;
+            font-family: var(--font-family);
             background: var(--secondary);
             color: var(--text-primary);
             font-size: 0.9375rem;
@@ -226,7 +227,7 @@ $flashMessages = get_flash_messages();
             border-bottom: 1px solid rgba(255,255,255,.1);
         }
         .sidebar-header a {
-            font-family: 'DM Serif Display', serif;
+            font-family: var(--font-family);
             font-size: 1.6rem; color: white; text-decoration: none;
         }
         .sidebar-header a span { color: var(--accent); }
@@ -266,7 +267,7 @@ $flashMessages = get_flash_messages();
             position: sticky; top: 0; z-index: 100;
         }
         .topbar h1 {
-            font-family: 'DM Serif Display', serif;
+            font-family: var(--font-family);
             font-size: 1.5rem; font-weight: 400; color: var(--primary);
         }
         .topbar-user { display: flex; align-items: center; gap: 1rem; }
@@ -331,7 +332,7 @@ $flashMessages = get_flash_messages();
         .hero-avatar-edit:hover { transform: scale(1.1); }
         .hero-info { color: white; }
         .hero-info h2 {
-            font-family: 'DM Serif Display', serif;
+            font-family: var(--font-family);
             font-size: 1.6rem; font-weight: 400; margin-bottom: .25rem;
         }
         .hero-info .hero-meta { font-size: .875rem; opacity: .8; }
@@ -354,7 +355,7 @@ $flashMessages = get_flash_messages();
         .tab-btn {
             flex: 1; padding: .875rem 1rem;
             background: none; border: none; cursor: pointer;
-            font: .875rem/1 'DM Sans', sans-serif; font-weight: 500;
+            font: .875rem/1 var(--font-family); font-weight: 500;
             color: var(--text-secondary);
             display: flex; align-items: center; justify-content: center; gap: .5rem;
             border-bottom: 3px solid transparent;
@@ -398,7 +399,7 @@ $flashMessages = get_flash_messages();
             padding: .625rem .875rem;
             border: 1.5px solid var(--border);
             border-radius: var(--radius);
-            font: .9375rem 'DM Sans', sans-serif;
+            font: .9375rem var(--font-family);
             color: var(--text-primary);
             background: var(--surface);
             transition: border-color .2s, box-shadow .2s;
@@ -454,7 +455,7 @@ $flashMessages = get_flash_messages();
         .btn {
             display: inline-flex; align-items: center; gap: .5rem;
             padding: .65rem 1.5rem; border-radius: var(--radius);
-            font: 500 .9rem 'DM Sans', sans-serif;
+            font: 500 .9rem var(--font-family);
             border: none; cursor: pointer; transition: all .2s;
             text-decoration: none;
         }

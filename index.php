@@ -33,7 +33,7 @@ include 'partials/header.php';
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>iProply – Find Your Dream Property</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
 
@@ -41,11 +41,11 @@ include 'partials/header.php';
 /* =====================================================
    TYPOGRAPHY OVERRIDE – Playfair + DM Sans
    ===================================================== */
-body { font-family:'DM Sans',var(--font-family); }
+body { font-family:var(--font-family); }
 .hero-title, .section-title, .testi-featured-text,
 .testi-card-text, .plan-name, .step-card h3,
 .cta-section h2, .about-content h2 {
-    font-family:'Playfair Display',Georgia,serif;
+    font-family:var(--font-family);
 }
 
 /* =====================================================
@@ -107,7 +107,7 @@ body { font-family:'DM Sans',var(--font-family); }
     border-radius:var(--radius-lg); padding:1.5rem; backdrop-filter:blur(10px);
 }
 .hsr-num {
-    font-family:'Playfair Display',serif;
+    font-family:var(--font-family);
     font-size:2rem; font-weight:700; color:#ffc107; line-height:1;
 }
 .hsr-lbl { font-size:.72rem; color:rgba(255,255,255,.6); text-transform:uppercase; letter-spacing:.08em; margin-top:.25rem; }
@@ -120,7 +120,7 @@ body { font-family:'DM Sans',var(--font-family); }
     padding:2rem; box-shadow:var(--shadow-2xl);
 }
 .hero-search-panel h3 {
-    font-family:'Playfair Display',serif; font-size:1.4rem;
+    font-family:var(--font-family); font-size:1.4rem;
     color:var(--primary); margin-bottom:1.5rem;
 }
 .hsp-field { margin-bottom:1rem; }
@@ -131,7 +131,7 @@ body { font-family:'DM Sans',var(--font-family); }
 .hsp-input {
     width:100%; padding:.7rem 1rem;
     border:1.5px solid var(--border); border-radius:var(--radius-md);
-    font-family:'DM Sans',sans-serif; font-size:.9rem; color:var(--text-primary);
+    font-family:var(--font-family); font-size:.9rem; color:var(--text-primary);
     background:#fff; transition:border-color var(--transition-fast),box-shadow var(--transition-fast); outline:none;
 }
 .hsp-input:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(30,59,90,.1); }
@@ -140,7 +140,7 @@ body { font-family:'DM Sans',var(--font-family); }
     width:100%; padding:.9rem; margin-top:.5rem;
     background:linear-gradient(135deg,var(--primary),var(--primary-light));
     color:#fff; border:none; border-radius:var(--radius-md);
-    font-family:'DM Sans',sans-serif; font-size:.875rem; font-weight:700;
+    font-family:var(--font-family); font-size:.875rem; font-weight:700;
     letter-spacing:.05em; text-transform:uppercase; cursor:pointer;
     transition:all var(--transition-fast);
     display:flex; align-items:center; justify-content:center; gap:.5rem;
@@ -149,7 +149,7 @@ body { font-family:'DM Sans',var(--font-family); }
 .hsp-geo-btn {
     width:100%; margin-top:.65rem; background:none;
     border:1.5px solid var(--border); border-radius:var(--radius-md); padding:.65rem;
-    font-family:'DM Sans',sans-serif; font-size:.8rem; color:var(--text-secondary);
+    font-family:var(--font-family); font-size:.8rem; color:var(--text-secondary);
     cursor:pointer; display:flex; align-items:center; justify-content:center;
     gap:.5rem; transition:all var(--transition-fast);
 }
@@ -260,7 +260,7 @@ body { font-family:'DM Sans',var(--font-family); }
 @media(max-width:900px){.sband-item:nth-child(2){border-right:none}.sband-item:nth-child(3){border-top:1px solid rgba(255,255,255,.1)}}
 .sband-icon { font-size:1.6rem; color:rgba(255,255,255,.35); margin-bottom:.75rem; }
 .sband-num {
-    font-family:'Playfair Display',serif;
+    font-family:var(--font-family);
     font-size:2.75rem; font-weight:700; color:#ffc107; line-height:1;
 }
 .sband-lbl { font-size:.75rem; color:rgba(255,255,255,.6); text-transform:uppercase; letter-spacing:.1em; margin-top:.4rem; }
@@ -288,7 +288,7 @@ body { font-family:'DM Sans',var(--font-family); }
     width:64px; height:64px; border-radius:50%; margin:0 auto 1.5rem;
     background:linear-gradient(135deg,var(--primary),var(--primary-light));
     color:#fff; display:flex; align-items:center; justify-content:center;
-    font-family:'Playfair Display',serif; font-size:1.5rem; font-weight:700;
+    font-family:var(--font-family); font-size:1.5rem; font-weight:700;
     position:relative; z-index:1;
 }
 .step-num-circle::after {
@@ -310,7 +310,7 @@ body { font-family:'DM Sans',var(--font-family); }
 }
 .testi-featured::before {
     content:'\201C'; position:absolute; top:-20px; left:1.5rem;
-    font-family:'Playfair Display',serif; font-size:12rem; line-height:1;
+    font-family:var(--font-family); font-size:12rem; line-height:1;
     color:rgba(255,255,255,.07); pointer-events:none;
 }
 .testi-featured-text {
@@ -336,7 +336,7 @@ body { font-family:'DM Sans',var(--font-family); }
 }
 .tcard::before {
     content:'\201C'; position:absolute; top:-12px; right:1rem;
-    font-family:'Playfair Display',serif; font-size:7rem; line-height:1;
+    font-family:var(--font-family); font-size:7rem; line-height:1;
     color:rgba(30,59,90,.05); pointer-events:none;
 }
 .tcard:hover { transform:translateY(-4px); box-shadow:var(--shadow-xl); }
@@ -351,7 +351,7 @@ body { font-family:'DM Sans',var(--font-family); }
     width:42px; height:42px; border-radius:50%; flex-shrink:0;
     background:linear-gradient(135deg,var(--primary),var(--primary-light));
     color:#fff; display:flex; align-items:center; justify-content:center;
-    font-family:'Playfair Display',serif; font-size:.95rem; font-weight:700;
+    font-family:var(--font-family); font-size:.95rem; font-weight:700;
 }
 .tcard-name { font-weight:700; font-size:.88rem; color:var(--text-primary); }
 .tcard-role { font-size:.74rem; color:var(--text-secondary); margin-top:.1rem; }
@@ -474,7 +474,7 @@ body { font-family:'DM Sans',var(--font-family); }
 .plan-desc { font-size:.83rem; color:var(--text-secondary); margin-top:.3rem; line-height:1.6; }
 .plan-price-wrap { margin:1.65rem 0; }
 .plan-price-n {
-    font-family:'Playfair Display',serif;
+    font-family:var(--font-family);
     font-size:2.9rem; font-weight:700; color:var(--primary); line-height:1;
 }
 .plan-price-n .cur { font-size:1.3rem; vertical-align:top; margin-top:.4rem; display:inline-block; }
@@ -493,7 +493,7 @@ body { font-family:'DM Sans',var(--font-family); }
 .plan-btn {
     width:100%; padding:.9rem; border-radius:var(--radius-md);
     font-size:.8rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
-    cursor:pointer; border:none; font-family:'DM Sans',sans-serif;
+    cursor:pointer; border:none; font-family:var(--font-family);
     transition:all var(--transition-fast);
     display:flex; align-items:center; justify-content:center; gap:.45rem; margin-top:auto;
 }
@@ -530,7 +530,7 @@ body { font-family:'DM Sans',var(--font-family); }
 .about-check li i { color:var(--success); margin-top:.18rem; flex-shrink:0; }
 .about-mini-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-top:2rem; }
 .amg { background:var(--secondary); border-radius:var(--radius-md); padding:1.25rem; text-align:center; }
-.amg-n { font-family:'Playfair Display',serif; font-size:1.9rem; font-weight:700; color:var(--primary); }
+.amg-n { font-family:var(--font-family); font-size:1.9rem; font-weight:700; color:var(--primary); }
 .amg-l { font-size:.7rem; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.08em; margin-top:.25rem; }
 
 /* =====================================================
@@ -894,7 +894,7 @@ body { font-family:'DM Sans',var(--font-family); }
             </div>
             <div class="reveal reveal-d1">
                 <span class="section-label">About Us</span>
-                <h2 class="about-content h2" style="font-family:'Playfair Display',serif;font-size:var(--font-size-3xl);font-weight:700;color:var(--text-primary);margin-bottom:var(--spacing-lg)">America's Most Trusted Property Platform</h2>
+                <h2 class="about-content h2" style="font-family:var(--font-family);font-size:var(--font-size-3xl);font-weight:700;color:var(--text-primary);margin-bottom:var(--spacing-lg)">America's Most Trusted Property Platform</h2>
                 <div class="section-divider"></div>
                 <p style="color:var(--text-secondary);line-height:1.75;margin-bottom:1rem">
                     With over 15 years of experience, we've reimagined how Americans buy, sell, and rent property. Our 800+ licensed agents span every major market from coast to coast.

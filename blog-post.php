@@ -35,17 +35,17 @@ include 'partials/header.php';
     <?php endif; ?>
     
     <div class="container" style="position: relative; z-index: 1; max-width: 900px; text-align: center;">
-        <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 1.5rem; font-family: 'Jost', sans-serif; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold-200);">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 1.5rem; font-family: var(--font-family); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold-200);">
             <span><i class="far fa-calendar-alt"></i> <?php echo format_date($post['created_at']); ?></span>
             <span>|</span>
             <span><i class="far fa-user"></i> <?php echo sanitize($post['author_name'] ?: 'Team iProply'); ?></span>
         </div>
         
-        <h1 style="font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 700; font-family: 'Playfair Display', serif; line-height: 1.2; margin-bottom: 2rem;">
+        <h1 style="font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 700; font-family: var(--font-family); line-height: 1.2; margin-bottom: 2rem;">
             <?php echo sanitize($post['title']); ?>
         </h1>
         
-        <a href="<?php echo base_url('blog.php'); ?>" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 12px 24px; border: 1px solid rgba(255,255,255,0.2); border-radius: 50px; color: white; font-family: 'Jost', sans-serif; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.borderColor='rgba(255,255,255,0.4)';" onmouseout="this.style.background='transparent'; this.style.borderColor='rgba(255,255,255,0.2)';">
+        <a href="<?php echo base_url('blog.php'); ?>" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 12px 24px; border: 1px solid rgba(255,255,255,0.2); border-radius: 50px; color: white; font-family: var(--font-family); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.borderColor='rgba(255,255,255,0.4)';" onmouseout="this.style.background='transparent'; this.style.borderColor='rgba(255,255,255,0.2)';">
             <i class="fas fa-arrow-left"></i> Back to Insights
         </a>
     </div>
@@ -71,10 +71,10 @@ include 'partials/header.php';
                             <?php 
                             // Format the content better
                             $content = sanitize($post['content']);
-                            $content = preg_replace('/H1:\s*(.*?)(\n|$)/', '<h2 style="font-family: \'Playfair Display\', serif; font-size: 2rem; color: var(--navy-900); margin: 2.5rem 0 1.5rem;">$1</h2>', $content);
-                            $content = preg_replace('/H2:\s*(.*?)(\n|$)/', '<h3 style="font-family: \'Playfair Display\', serif; font-size: 1.75rem; color: var(--navy-900); margin: 2rem 0 1rem;">$1</h3>', $content);
-                            $content = preg_replace('/H3:\s*(.*?)(\n|$)/', '<h4 style="font-family: \'Jost\', sans-serif; font-size: 1.25rem; font-weight: 600; color: var(--navy-800); margin: 1.5rem 0 1rem;">$1</h4>', $content);
-                            $content = preg_replace('/Pro Tip:\s*(.*?)(\n|$)/', '<div style="background: var(--warm-100); border-left: 4px solid var(--gold-200); padding: 1.5rem; margin: 2rem 0; border-radius: 0 12px 12px 0;"><strong style="font-family: \'Jost\', sans-serif; color: var(--navy-900); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.5rem;"><i class="fas fa-lightbulb" style="color: var(--gold-200);"></i> Pro Tip</strong>$1</div>', $content);
+                            $content = preg_replace('/H1:\s*(.*?)(\n|$)/', '<h2 style="font-family: var(--font-family); font-size: 2rem; color: var(--navy-900); margin: 2.5rem 0 1.5rem;">$1</h2>', $content);
+                            $content = preg_replace('/H2:\s*(.*?)(\n|$)/', '<h3 style="font-family: var(--font-family); font-size: 1.75rem; color: var(--navy-900); margin: 2rem 0 1rem;">$1</h3>', $content);
+                            $content = preg_replace('/H3:\s*(.*?)(\n|$)/', '<h4 style="font-family: var(--font-family); font-size: 1.25rem; font-weight: 600; color: var(--navy-800); margin: 1.5rem 0 1rem;">$1</h4>', $content);
+                            $content = preg_replace('/Pro Tip:\s*(.*?)(\n|$)/', '<div style="background: var(--warm-100); border-left: 4px solid var(--gold-200); padding: 1.5rem; margin: 2rem 0; border-radius: 0 12px 12px 0;"><strong style="font-family: var(--font-family); color: var(--navy-900); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.5rem;"><i class="fas fa-lightbulb" style="color: var(--gold-200);"></i> Pro Tip</strong>$1</div>', $content);
                             
                             // Parse "Image: [caption]" placeholders
                             $inlineImages = [
@@ -94,7 +94,7 @@ include 'partials/header.php';
                                 $figure = '<figure style="margin: 3rem 0; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">';
                                 $figure .= '<img src="' . $imgSrc . '" alt="' . htmlspecialchars($caption) . '" style="width: 100%; height: auto; display: block;">';
                                 if (!empty($caption)) {
-                                    $figure .= '<figcaption style="padding: 1rem; background: var(--warm-100); color: var(--text-secondary); font-size: 0.9rem; text-align: center; font-family: \'Jost\', sans-serif;">' . htmlspecialchars($caption) . '</figcaption>';
+                                    $figure .= '<figcaption style="padding: 1rem; background: var(--warm-100); color: var(--text-secondary); font-size: 0.9rem; text-align: center; font-family: var(--font-family);">' . htmlspecialchars($caption) . '</figcaption>';
                                 }
                                 $figure .= '</figure>';
                                 return $figure;
@@ -111,7 +111,7 @@ include 'partials/header.php';
                                 <i class="fas fa-user-tie"></i>
                             </div>
                             <div>
-                                <h4 style="font-family: 'Playfair Display', serif; font-size: 1.25rem; color: var(--navy-900); margin-bottom: 0.25rem;">Written by <?php echo sanitize($post['author_name'] ?: 'Team iProply'); ?></h4>
+                                <h4 style="font-family: var(--font-family); font-size: 1.25rem; color: var(--navy-900); margin-bottom: 0.25rem;">Written by <?php echo sanitize($post['author_name'] ?: 'Team iProply'); ?></h4>
                                 <p style="color: var(--text-secondary); font-size: 0.95rem; margin: 0;">Real Estate Market Analyst & Investment Specialist at iProply.</p>
                             </div>
                         </div>
@@ -124,9 +124,9 @@ include 'partials/header.php';
                     
                     <!-- Search Widget -->
                     <div style="background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.03);">
-                        <h4 style="font-family: 'Playfair Display', serif; font-size: 1.25rem; color: var(--navy-900); margin-bottom: 1rem;">Search Insights</h4>
+                        <h4 style="font-family: var(--font-family); font-size: 1.25rem; color: var(--navy-900); margin-bottom: 1rem;">Search Insights</h4>
                         <form action="blog.php" method="GET" style="position: relative;">
-                            <input type="text" name="q" placeholder="Type keyword..." style="width: 100%; padding: 12px 16px; padding-right: 45px; border: 1px solid var(--border); border-radius: 8px; font-family: 'Jost', sans-serif; font-size: 0.95rem; outline: none; transition: border-color 0.3s ease;" onfocus="this.style.borderColor='var(--gold-200)'" onblur="this.style.borderColor='var(--border)'">
+                            <input type="text" name="q" placeholder="Type keyword..." style="width: 100%; padding: 12px 16px; padding-right: 45px; border: 1px solid var(--border); border-radius: 8px; font-family: var(--font-family); font-size: 0.95rem; outline: none; transition: border-color 0.3s ease;" onfocus="this.style.borderColor='var(--gold-200)'" onblur="this.style.borderColor='var(--border)'">
                             <button type="submit" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: var(--navy-700); cursor: pointer;">
                                 <i class="fas fa-search"></i>
                             </button>
@@ -135,7 +135,7 @@ include 'partials/header.php';
 
                     <!-- Categories Widget -->
                     <div style="background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.03);">
-                        <h4 style="font-family: 'Playfair Display', serif; font-size: 1.25rem; color: var(--navy-900); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--warm-200);">Categories</h4>
+                        <h4 style="font-family: var(--font-family); font-size: 1.25rem; color: var(--navy-900); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--warm-200);">Categories</h4>
                         <ul style="list-style: none; padding: 0; margin: 0;">
                             <?php
                             $categories = ['Buying Guides' => 12, 'Selling Tips' => 8, 'Market Trends' => 5, 'Investment' => 9, 'Home Improvement' => 4];
@@ -144,7 +144,7 @@ include 'partials/header.php';
                             <li style="margin-bottom: 0.75rem; border-bottom: 1px dashed var(--warm-200); padding-bottom: 0.75rem;">
                                 <a href="#" style="display: flex; justify-content: space-between; color: var(--text-secondary); text-decoration: none; font-size: 0.95rem; transition: color 0.2s ease;" onmouseover="this.style.color='var(--navy-800)'" onmouseout="this.style.color='var(--text-secondary)'">
                                     <span><?php echo $cat; ?></span>
-                                    <span style="background: var(--warm-100); padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; color: var(--navy-700); font-family: 'Jost', sans-serif;"><?php echo $count; ?></span>
+                                    <span style="background: var(--warm-100); padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; color: var(--navy-700); font-family: var(--font-family);"><?php echo $count; ?></span>
                                 </a>
                             </li>
                             <?php endforeach; ?>
@@ -153,7 +153,7 @@ include 'partials/header.php';
 
                     <!-- Recent Posts Widget -->
                     <div style="background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.03);">
-                        <h4 style="font-family: 'Playfair Display', serif; font-size: 1.25rem; color: var(--navy-900); margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--warm-200);">Recent Articles</h4>
+                        <h4 style="font-family: var(--font-family); font-size: 1.25rem; color: var(--navy-900); margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--warm-200);">Recent Articles</h4>
                         <div style="display: flex; flex-direction: column; gap: 1.25rem;">
                             <?php foreach($recentPosts as $rpost): ?>
                             <div style="display: flex; gap: 1rem; align-items: center;">
@@ -166,8 +166,8 @@ include 'partials/header.php';
                                     <?php endif; ?>
                                 </div>
                                 <div>
-                                    <p style="font-size: 0.7rem; color: var(--text-muted); font-family: 'Jost', sans-serif; text-transform: uppercase; margin-bottom: 0.25rem;"><?php echo format_date($rpost['created_at']); ?></p>
-                                    <h5 style="font-family: 'Playfair Display', serif; font-size: 0.95rem; line-height: 1.3; margin: 0;">
+                                    <p style="font-size: 0.7rem; color: var(--text-muted); font-family: var(--font-family); text-transform: uppercase; margin-bottom: 0.25rem;"><?php echo format_date($rpost['created_at']); ?></p>
+                                    <h5 style="font-family: var(--font-family); font-size: 0.95rem; line-height: 1.3; margin: 0;">
                                         <a href="<?php echo base_url('blog-post.php?slug=' . urlencode($rpost['slug'])); ?>" style="color: var(--navy-900); text-decoration: none; transition: color 0.2s ease;" onmouseover="this.style.color='var(--gold-100)'" onmouseout="this.style.color='var(--navy-900)'">
                                             <?php echo sanitize($rpost['title']); ?>
                                         </a>
@@ -181,11 +181,11 @@ include 'partials/header.php';
                     <!-- Newsletter Widget -->
                     <div style="background: linear-gradient(135deg, var(--navy-900) 0%, var(--navy-700) 100%); padding: 2.5rem 2rem; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); color: white; text-align: center;">
                         <i class="far fa-envelope-open" style="font-size: 2.5rem; color: var(--gold-200); margin-bottom: 1rem;"></i>
-                        <h4 style="font-family: 'Playfair Display', serif; font-size: 1.5rem; margin-bottom: 0.5rem;">Join Our Newsletter</h4>
+                        <h4 style="font-family: var(--font-family); font-size: 1.5rem; margin-bottom: 0.5rem;">Join Our Newsletter</h4>
                         <p style="font-size: 0.9rem; color: rgba(255,255,255,0.8); margin-bottom: 1.5rem;">Get the latest real estate market insights directly to your inbox.</p>
                         <form action="#" method="POST">
-                            <input type="email" placeholder="Your Email Address" style="width: 100%; padding: 12px 16px; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; font-family: 'Jost', sans-serif; font-size: 0.95rem; background: rgba(255,255,255,0.1); color: white; outline: none; margin-bottom: 1rem;">
-                            <button type="submit" style="width: 100%; padding: 12px; border: none; border-radius: 8px; background: linear-gradient(135deg, var(--gold-100) 0%, var(--gold-200) 100%); color: var(--navy-900); font-family: 'Jost', sans-serif; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; transition: transform 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">Subscribe</button>
+                            <input type="email" placeholder="Your Email Address" style="width: 100%; padding: 12px 16px; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; font-family: var(--font-family); font-size: 0.95rem; background: rgba(255,255,255,0.1); color: white; outline: none; margin-bottom: 1rem;">
+                            <button type="submit" style="width: 100%; padding: 12px; border: none; border-radius: 8px; background: linear-gradient(135deg, var(--gold-100) 0%, var(--gold-200) 100%); color: var(--navy-900); font-family: var(--font-family); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; transition: transform 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">Subscribe</button>
                         </form>
                     </div>
 
@@ -193,9 +193,9 @@ include 'partials/header.php';
                     <div style="position: relative; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); background: var(--gold-100);">
                         <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=600&q=80" alt="Promo" style="width: 100%; height: 250px; object-fit: cover; opacity: 0.4;">
                         <div style="position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2rem;">
-                            <h4 style="font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--navy-900); margin-bottom: 0.5rem; font-weight: 700;">Find Your Dream Home</h4>
+                            <h4 style="font-family: var(--font-family); font-size: 1.5rem; color: var(--navy-900); margin-bottom: 0.5rem; font-weight: 700;">Find Your Dream Home</h4>
                             <p style="font-size: 0.9rem; color: var(--navy-800); margin-bottom: 1.5rem; font-weight: 500;">Browse exclusive premium listings today.</p>
-                            <a href="<?php echo base_url('listings.php'); ?>" style="padding: 10px 20px; background: var(--navy-900); color: white; text-decoration: none; font-family: 'Jost', sans-serif; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; border-radius: 50px; font-weight: 600;">View Properties</a>
+                            <a href="<?php echo base_url('listings.php'); ?>" style="padding: 10px 20px; background: var(--navy-900); color: white; text-decoration: none; font-family: var(--font-family); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; border-radius: 50px; font-weight: 600;">View Properties</a>
                         </div>
                     </div>
 

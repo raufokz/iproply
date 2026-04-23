@@ -145,7 +145,7 @@ $flashMessages = get_flash_messages();
     <title><?php echo $pageTitle; ?> - <?php echo APP_NAME; ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/css/admin.css">
     <style>
@@ -167,7 +167,7 @@ $flashMessages = get_flash_messages();
             --radius-lg:     16px;
         }
 
-        body { font-family: 'DM Sans', sans-serif; }
+        body { font-family: var(--font-family); }
 
         .content { padding: 2rem; max-width: 1000px; }
 
@@ -217,7 +217,7 @@ $flashMessages = get_flash_messages();
         .hero-avatar-edit:hover { transform: scale(1.1); }
         .hero-info { color: white; }
         .hero-info h2 {
-            font-family: 'DM Serif Display', serif;
+            font-family: var(--font-family);
             font-size: 1.6rem; font-weight: 400; margin-bottom: .2rem;
         }
         .hero-email { font-size: .875rem; opacity: .7; margin-bottom: .75rem; }
@@ -238,7 +238,7 @@ $flashMessages = get_flash_messages();
         .tab-btn {
             flex: 1; padding: .875rem 1rem;
             background: none; border: none; cursor: pointer;
-            font: .875rem/1 'DM Sans', sans-serif; font-weight: 500;
+            font: .875rem/1 var(--font-family); font-weight: 500;
             color: var(--text-secondary);
             display: flex; align-items: center; justify-content: center; gap: .5rem;
             border-bottom: 3px solid transparent; transition: all .2s;
@@ -271,7 +271,7 @@ $flashMessages = get_flash_messages();
         .form-control {
             padding: .625rem .875rem;
             border: 1.5px solid var(--border); border-radius: var(--radius);
-            font: .9375rem 'DM Sans', sans-serif; color: var(--text-primary);
+            font: .9375rem var(--font-family); color: var(--text-primary);
             background: var(--surface); transition: border-color .2s, box-shadow .2s;
         }
         .form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(30,59,90,.1); }
@@ -311,7 +311,7 @@ $flashMessages = get_flash_messages();
         .btn {
             display: inline-flex; align-items: center; gap: .5rem;
             padding: .65rem 1.5rem; border-radius: var(--radius);
-            font: 500 .9rem 'DM Sans', sans-serif;
+            font: 500 .9rem var(--font-family);
             border: none; cursor: pointer; transition: all .2s; text-decoration: none;
         }
         .btn-primary { background: var(--primary); color: white; }

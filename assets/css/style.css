@@ -43,7 +43,7 @@
     --ink: #1c1812;
     --taupe: #6b5d4d;
     /* Typography */
-    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     --font-size-xs: 0.75rem;
     --font-size-sm: 0.875rem;
     --font-size-base: 1rem;
@@ -401,7 +401,7 @@ ul, ol {
     align-items: center;
     gap: 6px;
     padding: 12px 20px;
-    font-family: 'Jost', sans-serif;
+    font-family: var(--font-family);
     font-size: 0.8rem;
     font-weight: 500;
     letter-spacing: 0.12em;
@@ -542,7 +542,7 @@ ul, ol {
     align-items: center;
     gap: 12px;
     padding: 12px 16px;
-    font-family: 'Jost', sans-serif;
+    font-family: var(--font-family);
     font-size: 0.8rem;
     font-weight: 400;
     letter-spacing: 0.06em;
@@ -602,7 +602,7 @@ ul, ol {
     align-items: center;
     gap: 8px;
     padding: 10px 20px;
-    font-family: 'Jost', sans-serif;
+    font-family: var(--font-family);
     font-size: 0.75rem;
     font-weight: 500;
     letter-spacing: 0.1em;
@@ -645,7 +645,7 @@ ul, ol {
     align-items: center;
     gap: 8px;
     padding: 12px 24px;
-    font-family: 'Jost', sans-serif;
+    font-family: var(--font-family);
     font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.1em;
@@ -796,7 +796,7 @@ ul, ol {
     width: 100%;
     padding: 24px 32px;
     font-size: 1.5rem;
-    font-family: 'Jost', sans-serif;
+    font-family: var(--font-family);
     background: rgba(255, 255, 255, 0.05);
     border: 2px solid rgba(200, 166, 99, 0.3);
     border-radius: 16px;
@@ -978,7 +978,7 @@ ul, ol {
     display: flex;
     align-items: center;
     padding: 16px 20px;
-    font-family: 'Jost', sans-serif;
+    font-family: var(--font-family);
     font-size: 0.9rem;
     font-weight: 500;
     letter-spacing: 0.1em;
@@ -1087,7 +1087,7 @@ ul, ol {
     gap: 14px;
     padding: 18px 22px;
     border-radius: 14px;
-    font-family: 'Jost', sans-serif;
+    font-family: var(--font-family);
     font-size: 0.9rem;
     line-height: 1.5;
     animation: alertIn 400ms var(--transition-spring) both;
@@ -2440,7 +2440,7 @@ ul, ol {
 .SiteFooter {
     background-color: var(--navy-900);
     color: var(--cream);
-    font-family: 'Jost', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: var(--font-family);
     font-size: 15px;
     line-height: 1.7;
     width: 100%;
@@ -2541,7 +2541,7 @@ ul, ol {
 
 /* ── Section Headings (Playfair Display - Luxury Serif) ── */
 .linkHeading {
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: var(--font-family);
     font-size: 18px;
     font-weight: 600;
     color: var(--gold-100);
@@ -2763,7 +2763,7 @@ ul, ol {
 
 /* Specific legal text styling */
 .copyright {
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: var(--font-family);
     font-weight: 600;
     color: var(--cream);
     margin-bottom: 20px;
@@ -2914,7 +2914,7 @@ ul, ol {
     font-size: 15px;
     margin-bottom: 16px;
     font-weight: 500;
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-family);
     letter-spacing: 0.3px;
 }
 
@@ -2930,7 +2930,7 @@ ul, ol {
     border-radius: 10px;
     background: rgba(4, 20, 39, 0.5);
     color: var(--cream);
-    font-family: 'Jost', sans-serif;
+    font-family: var(--font-family);
     font-size: 15px;
     transition: all 0.3s ease;
 }
@@ -2951,7 +2951,7 @@ ul, ol {
     color: var(--navy-900);
     border: none;
     border-radius: 10px;
-    font-family: 'Jost', sans-serif;
+    font-family: var(--font-family);
     font-weight: 600;
     font-size: 14px;
     cursor: pointer;
