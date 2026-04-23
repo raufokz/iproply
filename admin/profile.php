@@ -350,6 +350,7 @@ $flashMessages = get_flash_messages();
         <a href="properties.php"><i class="fas fa-building"></i> Properties</a>
         <a href="agents.php"><i class="fas fa-users"></i> Agents</a>
         <a href="inquiries.php"><i class="fas fa-envelope"></i> Inquiries</a>
+        <a href="pages.php"><i class="fas fa-file-lines"></i> Pages</a>
         <a href="settings.php"><i class="fas fa-cog"></i> Settings</a>
         <a href="profile.php" class="active"><i class="fas fa-user-shield"></i> My Profile</a>
     </nav>

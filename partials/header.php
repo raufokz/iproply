@@ -8,15 +8,24 @@ $db            = Database::getInstance();
 $siteSettings  = $db->selectOne('site_settings', '*');
 $propertyModel = new Property();
 $propertyTypes = $propertyModel->getPropertyTypes();
+
+// Avoid notices on pages that don't set these explicitly (e.g., CMS pages, error pages).
+$currentPage = $currentPage ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="<?php echo sanitize($siteSettings['meta_description'] ?? APP_NAME . ' - Find Your Dream Home'); ?>">
-    <meta name="keywords"    content="<?php echo sanitize($siteSettings['meta_keywords']    ?? 'real estate, property, homes, apartments'); ?>">
-    <title><?php echo isset($pageTitle) ? sanitize($pageTitle) . ' — ' : ''; ?><?php echo sanitize($siteSettings['site_name'] ?? APP_NAME); ?></title>
+    <meta name="description" content="<?php echo sanitize($metaDescription ?? ($siteSettings['meta_description'] ?? (APP_NAME . ' - Find Your Dream Home'))); ?>">
+    <meta name="keywords"    content="<?php echo sanitize($metaKeywords ?? ($siteSettings['meta_keywords'] ?? 'real estate, property, homes, apartments')); ?>">
+    <title>
+        <?php if (!empty($metaTitle)): ?>
+            <?php echo sanitize($metaTitle); ?>
+        <?php else: ?>
+            <?php echo isset($pageTitle) ? sanitize($pageTitle) . ' — ' : ''; ?><?php echo sanitize($siteSettings['site_name'] ?? APP_NAME); ?>
+        <?php endif; ?>
+    </title>
 
     <link rel="icon" type="image/x-icon" href="<?php echo asset_url('../assets/favicon.ico'); ?>">
 

@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $message = sanitize($_POST['message'] ?? '');
         if (!empty($message)) {
             // TODO: Implement email sending using Mail class
-            set_flash_message('Email sent to inquirer', 'success');
+            set_flash_message('success', 'Email sent to inquirer');
             
             // Update status to responded
             $db->update('inquiries', ['status' => 'responded'], 'id = :id', ['id' => $inquiryId]);
@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $status = sanitize($_POST['status'] ?? '');
         if (in_array($status, ['new', 'responded', 'archived'])) {
             $db->update('inquiries', ['status' => $status], 'id = :id', ['id' => $inquiryId]);
-            set_flash_message('Inquiry status updated', 'success');
+            set_flash_message('success', 'Inquiry status updated');
         }
     }
     
@@ -174,6 +174,12 @@ $pageTitle = 'View Inquiry';
             </a>
             <a href="inquiries.php" class="active">
                 <i class="fas fa-envelope"></i> Inquiries
+            </a>
+            <a href="blogs.php">
+                <i class="fas fa-blog"></i> Blogs
+            </a>
+            <a href="pages.php">
+                <i class="fas fa-file-lines"></i> Pages
             </a>
             <a href="settings.php">
                 <i class="fas fa-cog"></i> Settings

@@ -174,6 +174,12 @@ $pageTitle = 'View Agent Profile';
             <a href="inquiries.php">
                 <i class="fas fa-envelope"></i> Inquiries
             </a>
+            <a href="blogs.php">
+                <i class="fas fa-blog"></i> Blogs
+            </a>
+            <a href="pages.php">
+                <i class="fas fa-file-lines"></i> Pages
+            </a>
             <a href="settings.php">
                 <i class="fas fa-cog"></i> Settings
             </a>

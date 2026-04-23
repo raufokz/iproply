@@ -66,14 +66,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     
     if ($action === 'approve' && $agentId > 0) {
         $db->update('agents', ['status' => 'active'], 'id = :id', ['id' => $agentId]);
-        set_flash_message('Agent approved successfully', 'success');
+        set_flash_message('success', 'Agent approved successfully');
     } elseif ($action === 'reject' && $agentId > 0) {
         $db->delete('agents', 'id = :id', ['id' => $agentId]);
-        set_flash_message('Agent rejected and removed', 'success');
+        set_flash_message('success', 'Agent rejected and removed');
     } elseif ($action === 'change-status' && $agentId > 0 && in_array($newStatus, ['active', 'inactive', 'suspended'])) {
         $db->update('agents', ['status' => $newStatus], 'id = :id', ['id' => $agentId]);
         $statusLabels = ['active' => 'activated', 'inactive' => 'deactivated', 'suspended' => 'suspended'];
-        set_flash_message('Agent ' . $statusLabels[$newStatus] . ' successfully', 'success');
+        set_flash_message('success', 'Agent ' . $statusLabels[$newStatus] . ' successfully');
     }
     
     // Redirect to prevent form resubmission
@@ -271,6 +271,9 @@ $pageTitle = 'Manage Agents';
             </a>
             <a href="blogs.php">
                 <i class="fas fa-blog"></i> Blogs
+            </a>
+            <a href="pages.php">
+                <i class="fas fa-file-lines"></i> Pages
             </a>
             <a href="settings.php">
                 <i class="fas fa-cog"></i> Settings

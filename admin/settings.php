@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     
     if (!empty($updateData)) {
         $db->update('site_settings', $updateData, '1 = 1');
-        set_flash_message('Settings updated successfully', 'success');
+        set_flash_message('success', 'Settings updated successfully');
         redirect('settings.php');
     }
 }
@@ -142,6 +142,9 @@ $pageTitle = 'Settings';
             </a>
             <a href="blogs.php">
                 <i class="fas fa-blog"></i> Blogs
+            </a>
+            <a href="pages.php">
+                <i class="fas fa-file-lines"></i> Pages
             </a>
             <a href="settings.php" class="active">
                 <i class="fas fa-cog"></i> Settings

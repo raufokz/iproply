@@ -67,13 +67,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     
     if ($action === 'respond' && $inquiryId > 0) {
         $db->update('inquiries', ['status' => 'responded'], 'id = :id', ['id' => $inquiryId]);
-        set_flash_message('Inquiry marked as responded', 'success');
+        set_flash_message('success', 'Inquiry marked as responded');
     } elseif ($action === 'archive' && $inquiryId > 0) {
         $db->update('inquiries', ['status' => 'archived'], 'id = :id', ['id' => $inquiryId]);
-        set_flash_message('Inquiry archived', 'success');
+        set_flash_message('success', 'Inquiry archived');
     } elseif ($action === 'delete' && $inquiryId > 0) {
         $db->delete('inquiries', 'id = :id', ['id' => $inquiryId]);
-        set_flash_message('Inquiry deleted', 'success');
+        set_flash_message('success', 'Inquiry deleted');
     }
     
     // Redirect to prevent form resubmission
@@ -246,6 +246,9 @@ $pageTitle = 'Manage Inquiries';
             </a>
             <a href="blogs.php">
                 <i class="fas fa-blog"></i> Blogs
+            </a>
+            <a href="pages.php">
+                <i class="fas fa-file-lines"></i> Pages
             </a>
             <a href="settings.php">
                 <i class="fas fa-cog"></i> Settings

@@ -1,8 +1,4 @@
 <?php
-/**
- * iProply - Terms of Use (CMS-managed)
- */
-
 $pageSlug = 'terms-of-use';
 require_once __DIR__ . '/page.php';
 

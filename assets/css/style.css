@@ -4321,3 +4321,62 @@ body {
         display: none !important;
     }
 }
+
+/* ============================================
+   CMS PAGES
+   ============================================ */
+.cms-hero {
+    padding: 140px 0 60px;
+    background: linear-gradient(135deg, var(--navy-900) 0%, var(--navy-700) 100%);
+    color: white;
+}
+
+.cms-title {
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1.2;
+    font-weight: 700;
+    margin: 0 0 0.75rem 0;
+}
+
+.cms-subtitle {
+    max-width: 780px;
+    font-size: 1.05rem;
+    line-height: 1.75;
+    color: rgba(255, 255, 255, 0.75);
+    margin: 0;
+}
+
+.cms-section {
+    padding: 3.5rem 0 5rem;
+    background: var(--cream);
+}
+
+.cms-content {
+    max-width: 900px;
+}
+
+.cms-content p {
+    margin: 0 0 1rem 0;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    line-height: 1.85;
+}
+
+.cms-heading {
+    margin: 2rem 0 0.75rem 0;
+    color: var(--navy-900);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.cms-list {
+    margin: 0 0 1rem 1.25rem;
+    padding: 0;
+}
+
+.cms-list li {
+    margin: 0.35rem 0;
+    color: var(--text-secondary);
+    line-height: 1.75;
+    list-style: disc;
+}
