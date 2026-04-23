@@ -1,0 +1,169 @@
+/* Agent Portal UI Enhancements
+   - Scoped to pages with <body class="agent-portal">
+   - Keeps agent pages visually consistent and more usable on mobile
+*/
+
+.agent-portal {
+    --portal-accent: var(--accent, #c8a663);
+    --portal-surface: #ffffff;
+    --portal-surface-muted: #f8fafc;
+    --portal-border: rgba(15, 23, 42, 0.08);
+    --portal-border-strong: rgba(15, 23, 42, 0.12);
+    --portal-shadow-sm: 0 1px 2px rgba(4, 20, 39, 0.06);
+    --portal-shadow-md: 0 10px 30px rgba(4, 20, 39, 0.10);
+    --portal-shadow-lg: 0 18px 60px rgba(4, 20, 39, 0.14);
+    --portal-ring: rgba(200, 166, 99, 0.28);
+}
+
+.agent-portal {
+    background: linear-gradient(180deg, #f7f9fc 0%, #f1f5fb 100%);
+    color: var(--text-primary);
+}
+
+.agent-portal .topbar {
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--portal-border);
+    box-shadow: var(--portal-shadow-sm);
+}
+
+.agent-portal .topbar-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.agent-portal .sidebar {
+    background: linear-gradient(180deg, var(--primary) 0%, #0f2747 100%);
+    box-shadow: 0 10px 30px rgba(4, 20, 39, 0.25);
+    will-change: transform;
+}
+
+.agent-portal .sidebar-header {
+    position: sticky;
+    top: 0;
+    background: linear-gradient(180deg, rgba(4, 20, 39, 0.35) 0%, rgba(4, 20, 39, 0) 100%);
+    backdrop-filter: blur(6px);
+    z-index: 1;
+}
+
+.agent-portal .sidebar-nav a {
+    border-left: 3px solid transparent;
+}
+
+.agent-portal .sidebar-nav a:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-left-color: rgba(200, 166, 99, 0.45);
+}
+
+.agent-portal .sidebar-nav a.active {
+    background-color: rgba(255, 255, 255, 0.10);
+    border-left-color: var(--portal-accent);
+}
+
+.agent-portal .card {
+    border: 1px solid var(--portal-border);
+    box-shadow: var(--portal-shadow-md);
+}
+
+.agent-portal .card-header {
+    background: linear-gradient(180deg, var(--portal-surface-muted) 0%, var(--portal-surface) 100%);
+}
+
+.agent-portal .btn {
+    box-shadow: 0 1px 0 rgba(4, 20, 39, 0.06);
+}
+
+.agent-portal .btn-primary {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+}
+
+.agent-portal .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--portal-shadow-sm);
+}
+
+.agent-portal .btn-outline:hover {
+    border-color: var(--portal-border-strong);
+}
+
+.agent-portal .table th {
+    background: var(--portal-surface-muted);
+}
+
+.agent-portal .table tr:hover {
+    background: rgba(2, 6, 23, 0.03);
+}
+
+.agent-portal .badge {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.agent-portal .alert {
+    border: 1px solid rgba(15, 23, 42, 0.10);
+}
+
+.agent-portal :is(a, button, input, select, textarea):focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px var(--portal-ring);
+    border-radius: 10px;
+}
+
+.agent-portal .sidebar-toggle {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    border: 1px solid var(--portal-border);
+    background: var(--portal-surface);
+    color: var(--text-primary);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 150ms ease, background-color 150ms ease, border-color 150ms ease;
+}
+
+.agent-portal .sidebar-toggle:hover {
+    transform: translateY(-1px);
+    background: var(--portal-surface-muted);
+    border-color: var(--portal-border-strong);
+}
+
+.agent-portal .sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 6, 23, 0.55);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 200ms ease;
+    z-index: 900;
+}
+
+.agent-portal .sidebar-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+@media (max-width: 1024px) {
+    .agent-portal .sidebar-toggle {
+        display: inline-flex;
+    }
+
+    .agent-portal.sidebar-open {
+        overflow: hidden;
+    }
+
+    .agent-portal .sidebar {
+        transform: translateX(-100%);
+        transition: transform 300ms ease;
+    }
+
+    .agent-portal .sidebar.active {
+        transform: translateX(0);
+    }
+
+    .agent-portal .main-wrapper {
+        margin-left: 0 !important;
+    }
+}
+

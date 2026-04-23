@@ -304,10 +304,11 @@ $pageTitle = 'My Properties';
             .main-wrapper { margin-left: 0; }
         }
     </style>
+    <link rel="stylesheet" href="../assets/css/agent.css">
 </head>
-<body>
+<body class="agent-portal">
     <!-- Sidebar -->
-    <aside class="sidebar">
+    <aside class="sidebar" id="agentSidebar">
         <div class="sidebar-header">
             <a href="<?php echo base_url(); ?>"><?php echo APP_NAME; ?></a>
         </div>
@@ -339,11 +340,16 @@ $pageTitle = 'My Properties';
             </a>
         </div>
     </aside>
+
+    <div class="sidebar-overlay" data-sidebar-overlay></div>
     
     <!-- Main Content -->
     <div class="main-wrapper">
         <header class="topbar">
             <div class="topbar-title">
+                <button class="sidebar-toggle" type="button" data-sidebar-toggle aria-controls="agentSidebar" aria-expanded="false" aria-label="Open menu">
+                    <i class="fas fa-bars" aria-hidden="true"></i>
+                </button>
                 <h1>My Properties</h1>
             </div>
             <div class="topbar-user">
@@ -458,5 +464,7 @@ $pageTitle = 'My Properties';
             </div>
         </main>
     </div>
+
+    <script src="../assets/js/agent-portal.js"></script>
 </body>
 </html>

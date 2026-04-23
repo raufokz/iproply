@@ -420,8 +420,9 @@ $pageTitle = 'Inquiries';
             .stats-bar { flex-wrap: wrap; }
         }
     </style>
+    <link rel="stylesheet" href="../assets/css/agent.css">
 </head>
-<body>
+<body class="agent-portal">
 
     <!-- Reply Modal -->
     <div class="modal-overlay" id="replyModal">
@@ -467,7 +468,7 @@ $pageTitle = 'Inquiries';
     </div>
 
     <!-- Sidebar -->
-    <aside class="sidebar">
+    <aside class="sidebar" id="agentSidebar">
         <div class="sidebar-header">
             <a href="<?php echo base_url(); ?>"><?php echo APP_NAME; ?></a>
         </div>
@@ -486,10 +487,17 @@ $pageTitle = 'Inquiries';
         </div>
     </aside>
 
+    <div class="sidebar-overlay" data-sidebar-overlay></div>
+
     <!-- Main Content -->
     <div class="main-wrapper">
         <header class="topbar">
-            <div class="topbar-title"><h1>Inquiries</h1></div>
+            <div class="topbar-title">
+                <button class="sidebar-toggle" type="button" data-sidebar-toggle aria-controls="agentSidebar" aria-expanded="false" aria-label="Open menu">
+                    <i class="fas fa-bars" aria-hidden="true"></i>
+                </button>
+                <h1>Inquiries</h1>
+            </div>
             <div class="topbar-user">
                 <div class="user-info">
                     <div class="name"><?php echo sanitize($_SESSION['user_name']); ?></div>
@@ -718,6 +726,7 @@ $pageTitle = 'Inquiries';
             if (e.key === 'Escape') closeModal();
         });
     </script>
+    <script src="../assets/js/agent-portal.js"></script>
 
 </body>
 </html>

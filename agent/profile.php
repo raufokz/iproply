@@ -497,10 +497,11 @@ $flashMessages = get_flash_messages();
             .tabs { overflow-x: auto; }
         }
     </style>
+    <link rel="stylesheet" href="../assets/css/agent.css">
 </head>
-<body>
+<body class="agent-portal">
 
-<aside class="sidebar">
+<aside class="sidebar" id="agentSidebar">
     <div class="sidebar-header">
         <a href="<?php echo base_url(); ?>"><?php echo APP_NAME; ?></a>
     </div>
@@ -517,9 +518,16 @@ $flashMessages = get_flash_messages();
     </div>
 </aside>
 
+<div class="sidebar-overlay" data-sidebar-overlay></div>
+
 <div class="main-wrapper">
     <header class="topbar">
-        <h1>My Profile</h1>
+        <div class="topbar-title">
+            <button class="sidebar-toggle" type="button" data-sidebar-toggle aria-controls="agentSidebar" aria-expanded="false" aria-label="Open menu">
+                <i class="fas fa-bars" aria-hidden="true"></i>
+            </button>
+            <h1>My Profile</h1>
+        </div>
         <div class="topbar-user">
             <div style="text-align:right;">
                 <div class="name"><?php echo sanitize($agent['first_name'] . ' ' . $agent['last_name']); ?></div>
@@ -939,5 +947,6 @@ $flashMessages = get_flash_messages();
         });
     }
 </script>
+<script src="../assets/js/agent-portal.js"></script>
 </body>
 </html>
