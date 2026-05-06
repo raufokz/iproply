@@ -57,7 +57,7 @@ try {
                 <?php endif; ?>
                 
                 <!-- Optional: Newsletter Signup -->
-                <div class="newsletter-inline" style="margin-top: 125px; width: fit-content;">
+                <div class="newsletter-inline">
                     <p>Stay Updated</p>
                     <form class="newsletter-form-inline" action="<?php echo base_url('subscribe.php'); ?>" method="POST">
                         <input type="hidden" name="<?php echo CSRF_TOKEN_NAME; ?>" value="<?php echo generate_csrf_token(); ?>">
