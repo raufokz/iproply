@@ -5368,3 +5368,157 @@ select:not([multiple]) {
 select:not([multiple]):focus {
     box-shadow: 0 0 0 3px rgba(200, 166, 99, 0.18);
 }
+
+/* Listings filter responsive refresh */
+.filter-bar {
+    overflow-x: clip;
+}
+
+@supports not (overflow-x: clip) {
+    .filter-bar {
+        overflow-x: hidden;
+    }
+}
+
+.filter-bar .filter-form {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
+    gap: clamp(0.75rem, 1.2vw, 1rem);
+    align-items: end;
+}
+
+.filter-bar .filter-group,
+.filter-bar .filter-actions {
+    min-width: 0;
+}
+
+.filter-bar .filter-group {
+    grid-column: span 2;
+    gap: 0.45rem;
+}
+
+.filter-bar .filter-group label {
+    overflow: hidden;
+    color: #5f6268;
+    font-size: 0.86rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.filter-bar .filter-group input,
+.filter-bar .filter-group select {
+    width: 100%;
+    min-height: 50px;
+    padding: 0.78rem 0.95rem;
+    border: 1px solid rgba(15, 39, 71, 0.14);
+    border-radius: 8px;
+    background-color: #fff;
+    color: var(--navy-900);
+    font-size: 0.96rem;
+    line-height: 1.2;
+    box-shadow: none;
+}
+
+.filter-bar .filter-group select {
+    padding-right: 2.6rem !important;
+}
+
+.filter-bar .filter-group input:focus,
+.filter-bar .filter-group select:focus {
+    border-color: rgba(200, 166, 99, 0.86);
+    box-shadow: 0 0 0 3px rgba(200, 166, 99, 0.16);
+}
+
+.filter-bar .filter-actions {
+    display: grid !important;
+    grid-column: span 4;
+    grid-template-columns: minmax(0, 1fr) minmax(112px, 0.7fr);
+    gap: 0.75rem;
+    align-items: stretch;
+    align-self: end;
+    flex-direction: row;
+}
+
+.filter-bar .filter-actions .btn {
+    width: 100% !important;
+    min-height: 50px;
+    height: 50px;
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    flex: 0 0 auto;
+    font-size: 0.82rem;
+    letter-spacing: 0.08em;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.filter-bar .filter-actions .btn::before {
+    display: none;
+}
+
+.filter-bar .filter-actions .btn-primary {
+    box-shadow: 0 8px 20px rgba(200, 166, 99, 0.22);
+}
+
+.filter-bar .filter-actions .btn-outline {
+    border: 1px solid rgba(15, 39, 71, 0.18);
+    background: #fff;
+    color: var(--navy-800);
+}
+
+.filter-bar .filter-actions .btn-outline:hover,
+.filter-bar .filter-actions .btn-outline:focus-visible {
+    border-color: rgba(200, 166, 99, 0.72);
+    background: rgba(200, 166, 99, 0.12);
+    color: var(--navy-900);
+}
+
+@media (max-width: 1179px) {
+    .filter-bar .filter-form {
+        grid-template-columns: repeat(8, minmax(0, 1fr)) !important;
+    }
+
+    .filter-bar .filter-group {
+        grid-column: span 2;
+    }
+
+    .filter-bar .filter-actions {
+        grid-column: span 4;
+    }
+}
+
+@media (max-width: 767px) {
+    .filter-bar {
+        padding-block: 1rem;
+    }
+
+    .filter-bar .filter-form {
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    }
+
+    .filter-bar .filter-group {
+        grid-column: span 2;
+    }
+
+    .filter-bar .filter-actions {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 560px) {
+    .filter-bar .filter-form {
+        grid-template-columns: 1fr !important;
+    }
+
+    .filter-bar .filter-group,
+    .filter-bar .filter-actions {
+        grid-column: 1 / -1;
+    }
+
+    .filter-bar .filter-actions {
+        grid-template-columns: 1fr;
+    }
+}
