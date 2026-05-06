@@ -2904,6 +2904,7 @@ ul, ol {
 
 /* ── Newsletter Signup (Optional Enhancement) ── */
 .newsletter-inline {
+    width: 349px !important;
     margin-top: 10rem !important;
     padding: 24px;
     background: rgba(200, 166, 99, 0.06);
