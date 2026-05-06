@@ -1,0 +1,417 @@
+/**
+ * Shared agent portal auth pages (login, register): layout + workspace picker.
+ */
+
+:root {
+  --auth-primary: #1e3b5a;
+  --auth-primary-light: #2c5282;
+  --auth-text: #1e3b5a;
+  --auth-muted: #64748b;
+  --auth-border: #e2e8f0;
+  --auth-error: #dc2626;
+  --auth-error-bg: #fef2f2;
+  --auth-success-bg: #ecfdf5;
+  --auth-success-text: #0f766e;
+  --auth-radius: 12px;
+  --auth-shadow: 0 10px 40px rgba(15, 39, 71, 0.12);
+  --auth-accent: rgba(200, 166, 99, 0.35);
+  --auth-accent-strong: #c8a663;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.auth-body {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background:
+    radial-gradient(1200px 500px at 10% -10%, rgba(200, 166, 99, 0.2), transparent 55%),
+    linear-gradient(135deg, var(--auth-primary) 0%, var(--auth-primary-light) 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.25rem;
+}
+
+.auth-shell {
+  width: 100%;
+  max-width: 440px;
+}
+
+.auth-shell--wide {
+  max-width: 680px;
+}
+
+.auth-logo {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.auth-logo a {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+  letter-spacing: -0.02em;
+}
+
+.auth-card {
+  background: #fff;
+  border-radius: var(--auth-radius);
+  padding: clamp(1.75rem, 4vw, 2.35rem);
+  box-shadow: var(--auth-shadow);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.auth-card-head {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.auth-card-head h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--auth-text);
+  margin: 0 0 0.35rem;
+}
+
+.auth-card-head p {
+  margin: 0;
+  color: var(--auth-muted);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.form-group {
+  margin-bottom: 1.15rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--auth-muted);
+  margin-bottom: 0.4rem;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.8rem 0.95rem;
+  border: 1px solid var(--auth-border);
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input:hover {
+  border-color: #cbd5e1;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--auth-primary);
+  box-shadow: 0 0 0 3px rgba(30, 59, 90, 0.15);
+}
+
+.btn-auth-primary {
+  width: 100%;
+  padding: 0.95rem 1rem;
+  background: linear-gradient(135deg, var(--auth-primary) 0%, var(--auth-primary-light) 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-auth-primary:hover {
+  filter: brightness(1.06);
+  box-shadow: 0 8px 24px rgba(15, 39, 71, 0.2);
+}
+
+.btn-auth-primary:active {
+  transform: translateY(1px);
+}
+
+.alert-auth {
+  padding: 0.9rem 1rem;
+  border-radius: 10px;
+  margin-bottom: 1.25rem;
+  font-size: 0.875rem;
+}
+
+.alert-auth-error {
+  background: var(--auth-error-bg);
+  color: var(--auth-error);
+  border: 1px solid #fecaca;
+}
+
+.alert-auth-success {
+  background: var(--auth-success-bg);
+  color: var(--auth-success-text);
+  border: 1px solid #6ee7b7;
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 1.35rem;
+  padding-top: 1.35rem;
+  border-top: 1px solid var(--auth-border);
+  font-size: 0.875rem;
+}
+
+.auth-footer a {
+  color: var(--auth-primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-footer a:hover {
+  text-decoration: underline;
+}
+
+.remember-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.15rem;
+  font-size: 0.8125rem;
+}
+
+.remember-row label {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--auth-muted);
+  cursor: pointer;
+}
+
+.remember-row a {
+  color: var(--auth-primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.remember-row a:hover {
+  text-decoration: underline;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-row.full {
+  grid-template-columns: 1fr;
+}
+
+.form-section-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.85rem;
+  color: var(--auth-text);
+}
+
+.form-section-wrap {
+  margin-bottom: 1.35rem;
+  padding-bottom: 1.35rem;
+  border-bottom: 1px solid var(--auth-border);
+}
+
+.form-section-wrap:last-of-type {
+  border-bottom: none;
+}
+
+@media (max-width: 768px) {
+  .auth-shell--wide .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- Workspace picker --- */
+
+.ws-fieldset {
+  border: 0;
+  margin: 0 0 1.35rem;
+  padding: 0;
+}
+
+.ws-legend {
+  float: left;
+  width: 100%;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--auth-text);
+  margin: 0 0 0.35rem;
+  padding: 0;
+}
+
+.ws-required-mark {
+  color: var(--auth-error);
+}
+
+.ws-hint {
+  clear: both;
+  margin: 0 0 1rem;
+  font-size: 0.8125rem;
+  color: var(--auth-muted);
+  line-height: 1.5;
+}
+
+.ws-single-card {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+  padding: 1rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(200, 166, 99, 0.35);
+  background: linear-gradient(135deg, #fffdf9 0%, #faf8f5 100%);
+}
+
+.ws-single-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(30, 59, 90, 0.08);
+  color: var(--auth-primary);
+  flex-shrink: 0;
+}
+
+.ws-single-name {
+  font-weight: 700;
+  color: var(--auth-text);
+  font-size: 0.9375rem;
+}
+
+.ws-single-desc {
+  margin-top: 0.2rem;
+  font-size: 0.8125rem;
+  color: var(--auth-muted);
+  line-height: 1.45;
+}
+
+.ws-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.ws-card {
+  display: block;
+  cursor: pointer;
+  border-radius: 10px;
+  margin: 0;
+}
+
+.ws-card-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.ws-card-body {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  gap: 0.65rem 0.85rem;
+  align-items: start;
+  padding: 1rem 0.95rem;
+  border: 2px solid var(--auth-border);
+  border-radius: 10px;
+  background: #fff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, transform 0.15s ease;
+}
+
+.ws-card:hover .ws-card-body {
+  border-color: rgba(200, 166, 99, 0.65);
+  box-shadow: 0 10px 24px rgba(15, 39, 71, 0.06);
+}
+
+.ws-card:focus-within .ws-card-body {
+  border-color: var(--auth-primary);
+  box-shadow: 0 0 0 3px rgba(30, 59, 90, 0.12);
+}
+
+.ws-card:has(.ws-card-input:checked) .ws-card-body {
+  border-color: var(--auth-accent-strong);
+  background: linear-gradient(135deg, #fffefb 0%, #fffdfa 100%);
+  box-shadow: 0 0 0 1px rgba(200, 166, 99, 0.25), 0 12px 32px rgba(15, 39, 71, 0.08);
+}
+
+.ws-card-radio {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid #cbd5e1;
+  margin-top: 0.25rem;
+  position: relative;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.ws-card:has(.ws-card-input:checked) .ws-card-radio {
+  border-color: var(--auth-accent-strong);
+  background: var(--auth-accent-strong);
+}
+
+.ws-card:has(.ws-card-input:checked) .ws-card-radio::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.ws-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(30, 59, 90, 0.06);
+  color: var(--auth-primary);
+  flex-shrink: 0;
+}
+
+.ws-card-title {
+  display: block;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--auth-text);
+}
+
+.ws-card-desc {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.8125rem;
+  color: var(--auth-muted);
+  line-height: 1.45;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

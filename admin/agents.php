@@ -31,8 +31,12 @@ if ($status !== 'all') {
 
 if (!empty($search)) {
     if (!empty($conditions)) $conditions .= ' AND ';
-    $conditions .= "(first_name LIKE :search OR last_name LIKE :search OR email LIKE :search OR phone LIKE :search)";
-    $params['search'] = "%{$search}%";
+    $pat = "%{$search}%";
+    $conditions .= '(first_name LIKE :ag_a1 OR last_name LIKE :ag_a2 OR email LIKE :ag_a3 OR phone LIKE :ag_a4)';
+    $params['ag_a1'] = $pat;
+    $params['ag_a2'] = $pat;
+    $params['ag_a3'] = $pat;
+    $params['ag_a4'] = $pat;
 }
 
 // Get total count

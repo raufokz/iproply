@@ -501,45 +501,19 @@ $flashMessages = get_flash_messages();
 </head>
 <body class="agent-portal">
 
-<aside class="sidebar" id="agentSidebar">
-    <div class="sidebar-header">
-        <a href="<?php echo base_url(); ?>"><?php echo APP_NAME; ?></a>
-    </div>
-    <nav class="sidebar-nav">
-        <a href="dashboard.php"><i class="fas fa-home"></i> Dashboard</a>
-        <a href="properties.php"><i class="fas fa-building"></i> My Properties</a>
-        <a href="add-property.php"><i class="fas fa-plus-circle"></i> Add Property</a>
-        <a href="inquiries.php"><i class="fas fa-envelope"></i> Inquiries</a>
-        <a href="profile.php" class="active"><i class="fas fa-user"></i> Profile</a>
-    </nav>
-    <div class="sidebar-footer">
-        <a href="<?php echo base_url(); ?>"><i class="fas fa-arrow-left"></i> Back to Website</a>
-        <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
-    </div>
-</aside>
+<?php
+$agentNavActive = 'profile';
+require __DIR__ . '/partials/sidebar.php';
+?>
 
 <div class="sidebar-overlay" data-sidebar-overlay></div>
 
 <div class="main-wrapper">
-    <header class="topbar">
-        <div class="topbar-title">
-            <button class="sidebar-toggle" type="button" data-sidebar-toggle aria-controls="agentSidebar" aria-expanded="false" aria-label="Open menu">
-                <i class="fas fa-bars" aria-hidden="true"></i>
-            </button>
-            <h1>My Profile</h1>
-        </div>
-        <div class="topbar-user">
-            <div style="text-align:right;">
-                <div class="name"><?php echo sanitize($agent['first_name'] . ' ' . $agent['last_name']); ?></div>
-                <div class="role">Real Estate Agent</div>
-            </div>
-            <?php if (!empty($agent['avatar'])): ?>
-                <img src="<?php echo $avatarUrl; ?>" alt="Avatar" class="avatar-sm">
-            <?php else: ?>
-                <div class="avatar-placeholder"><?php echo strtoupper(substr($agent['first_name'], 0, 1)); ?></div>
-            <?php endif; ?>
-        </div>
-    </header>
+<?php
+$agentPageHeading = 'My Profile';
+$agentTopbarVariant = 'profile';
+require __DIR__ . '/partials/topbar.php';
+?>
 
     <main class="content">
 

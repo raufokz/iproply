@@ -13,66 +13,251 @@ class Property {
     }
 
     /**
-     * Get all properties with filters
+     * Public listing search WITH pagination fallback when strict filters yield zero rows.
+     *
+     * @param array<string,mixed> $filters Normalized listing filters from listing_filters_from_request()
+     * @return array{
+     *   properties: array,
+     *   total: int,
+     *   effective_filters: array,
+     *   fallback_message: ?string,
+     *   requested_filters: array
+     * }
      */
-    public function getAll($filters = [], $page = 1, $perPage = ITEMS_PER_PAGE) {
-        $where = ['p.property_status = :status'];
-        $params = ['status' => $filters['status'] ?? 'active'];
+    public function searchListingsPaginated(array $filters, $page = 1, $perPage = null) {
+        $page    = max(1, (int) $page);
+        $perPage = $perPage !== null ? max(1, (int) $perPage) : ITEMS_PER_PAGE;
 
-        // Apply filters
-        if (!empty($filters['keyword'])) {
-            $where[] = "(p.title LIKE :keyword OR p.description LIKE :keyword OR p.address LIKE :keyword OR p.city LIKE :keyword)";
-            $params['keyword'] = '%' . $filters['keyword'] . '%';
+        $strictCount = $this->getTotalCount($filters);
+
+        if ($strictCount > 0) {
+            $totalPages = max(1, (int) ceil($strictCount / $perPage));
+            $page       = min($page, $totalPages);
+
+            return [
+                'properties'         => $this->getAll($filters, $page, $perPage),
+                'total'               => $strictCount,
+                'effective_filters'   => $filters,
+                'fallback_message'    => null,
+                'requested_filters'   => $filters,
+            ];
         }
 
+        foreach ($this->nearbyListingFallbackVariants($filters) as $tier) {
+            $relaxed      = $tier['filters'];
+            $relaxedCount = $this->getTotalCount($relaxed);
+
+            if ($relaxedCount > 0) {
+                $totalPages = max(1, (int) ceil($relaxedCount / $perPage));
+                $page       = min($page, $totalPages);
+
+                return [
+                    'properties'         => $this->getAll($relaxed, $page, $perPage),
+                    'total'               => $relaxedCount,
+                    'effective_filters'   => $relaxed,
+                    'fallback_message'    => $tier['message'],
+                    'requested_filters'   => $filters,
+                ];
+            }
+        }
+
+        return [
+            'properties'         => [],
+            'total'               => 0,
+            'effective_filters'   => $filters,
+            'fallback_message'    => null,
+            'requested_filters'   => $filters,
+        ];
+    }
+
+    /**
+     * Build progressively relaxed filters for nearby / broader results.
+     *
+     * @param array<string,mixed> $filters
+     * @return array<int,array{filters: array, message: string}>
+     */
+    private function nearbyListingFallbackVariants(array $filters) {
+        $tiers       = [];
+        $signatures = [];
+
+        $freeze = static function (array $f): string {
+            ksort($f);
+
+            return md5(json_encode($f));
+        };
+
+        $push = function (array $f, $message) use (&$tiers, &$signatures, $freeze) {
+            $sig = $freeze($f);
+            if (isset($signatures[$sig])) {
+                return;
+            }
+            $signatures[$sig] = true;
+            $tiers[] = [
+                'filters' => $f,
+                'message' => $message,
+            ];
+        };
+
         if (!empty($filters['city'])) {
-            $where[] = "p.city LIKE :city";
-            $params['city'] = '%' . $filters['city'] . '%';
+            $f = $filters;
+            unset($f['city']);
+            $push($f, 'No exact matches found in this area. Showing nearby properties in the broader region instead.');
+        }
+
+        if (!empty($filters['keyword'])) {
+            $f = $filters;
+            unset($f['keyword'], $f['city']);
+            $push($f, 'No exact phrase matches on the map. Showing nearby listings that still match your other filters.');
+        }
+
+        if ((!empty($filters['geo_lat']) && !empty($filters['geo_lng']))) {
+            $curRadius = isset($filters['geo_radius_mi']) ? (float) $filters['geo_radius_mi'] : 75.0;
+
+            foreach ([160.0, 280.0] as $widenTo) {
+                if ($widenTo <= $curRadius + 1) {
+                    continue;
+                }
+
+                $f = $filters;
+                unset($f['keyword'], $f['city']);
+                $f['geo_radius_mi'] = $widenTo;
+                $push($f, 'No homes right next to your pin. Showing a wider nearby search instead.');
+            }
+        }
+
+        if (!empty($filters['state']) && (!empty($filters['keyword']) || !empty($filters['city']) || (!empty($filters['geo_lat']) && !empty($filters['geo_lng'])))) {
+            $f = $filters;
+            unset($f['keyword'], $f['city'], $f['geo_lat'], $f['geo_lng'], $f['geo_radius_mi']);
+            $push($f, 'Showing everything available in your selected state that still meets your listing filters.');
         }
 
         if (!empty($filters['state'])) {
-            $where[] = "p.state = :state";
-            $params['state'] = $filters['state'];
+            $f = $filters;
+            unset($f['state'], $f['keyword'], $f['city'], $f['geo_lat'], $f['geo_lng'], $f['geo_radius_mi']);
+            $push($f, 'Showing similar listings nationally with your sale/rent & budget filters.');
+        }
+
+        return $tiers;
+    }
+
+    /**
+     * PDO requires unique named placeholders when ATTR_EMULATE_PREPARES is false.
+     *
+     * @param array<string,mixed> $filters
+     * @return array{0: string[], 1: array<string,mixed>}
+     */
+    private function compilePublicListingConditions(array $filters) {
+        $where  = [];
+        $params = [];
+
+        $where[] = 'p.property_status = :fdb_ps';
+
+        // Back-compat: callers may send legacy key `status` for property_status workflow column.
+        $inventory = $filters['inventory_status']
+            ?? $filters['status']
+            ?? 'active';
+        $params['fdb_ps'] = $inventory;
+
+        if (!empty($filters['keyword'])) {
+            $term = trim((string) $filters['keyword']);
+            if ($term !== '') {
+                $like  = '%' . $term . '%';
+                $cols  = ['title', 'description', 'address', 'city', 'state', 'zip_code'];
+                $parts = [];
+                foreach ($cols as $idx => $col) {
+                    $ph        = 'fdb_kw' . $idx;
+                    $parts[]   = 'p.' . $col . ' LIKE :' . $ph;
+                    $params[$ph] = $like;
+                }
+
+                $where[] = '(' . implode(' OR ', $parts) . ')';
+            }
+        }
+
+        if (!empty($filters['city'])) {
+            $where[]      = 'p.city LIKE :fdb_citylike';
+            $params['fdb_citylike'] = '%' . trim((string) $filters['city']) . '%';
+        }
+
+        if (!empty($filters['state'])) {
+            $where[]           = 'p.state = :fdb_state_exact';
+            $params['fdb_state_exact'] = strtoupper(trim((string) $filters['state']));
         }
 
         if (!empty($filters['property_type'])) {
-            $where[] = "p.property_type_id = :property_type";
-            $params['property_type'] = $filters['property_type'];
+            $where[]           = 'p.property_type_id = :fdb_pt';
+            $params['fdb_pt'] = (int) $filters['property_type'];
         }
 
         if (!empty($filters['status_type'])) {
-            $where[] = "p.status = :status_type";
-            $params['status_type'] = $filters['status_type'];
+            $st               = strtolower((string) $filters['status_type']) === 'rent' ? 'rent' : 'sale';
+            $where[]           = 'p.status = :fdb_sale_rent';
+            $params['fdb_sale_rent'] = $st;
         }
 
-        if (!empty($filters['min_price'])) {
-            $where[] = "p.price >= :min_price";
-            $params['min_price'] = $filters['min_price'];
+        if (isset($filters['min_price']) && $filters['min_price'] !== '' && $filters['min_price'] !== null) {
+            $where[]            = 'p.price >= :fdb_pmin';
+            $params['fdb_pmin'] = (float) $filters['min_price'];
         }
 
-        if (!empty($filters['max_price'])) {
-            $where[] = "p.price <= :max_price";
-            $params['max_price'] = $filters['max_price'];
+        if (isset($filters['max_price']) && $filters['max_price'] !== '' && $filters['max_price'] !== null) {
+            $where[]             = 'p.price <= :fdb_pmax';
+            $params['fdb_pmax'] = (float) $filters['max_price'];
         }
 
-        if (!empty($filters['bedrooms'])) {
-            $where[] = "p.bedrooms >= :bedrooms";
-            $params['bedrooms'] = $filters['bedrooms'];
+        if (isset($filters['bedrooms']) && $filters['bedrooms'] !== '' && $filters['bedrooms'] !== null) {
+            $where[]               = 'p.bedrooms >= :fdb_bed';
+            $params['fdb_bed'] = (int) $filters['bedrooms'];
         }
 
-        if (!empty($filters['bathrooms'])) {
-            $where[] = "p.bathrooms >= :bathrooms";
-            $params['bathrooms'] = $filters['bathrooms'];
+        if (isset($filters['bathrooms']) && $filters['bathrooms'] !== '' && $filters['bathrooms'] !== null) {
+            $where[]                 = 'p.bathrooms >= :fdb_bath';
+            $params['fdb_bath'] = (float) $filters['bathrooms'];
         }
 
         if (!empty($filters['agent_id'])) {
-            $where[] = "p.agent_id = :agent_id";
-            $params['agent_id'] = $filters['agent_id'];
+            $where[]               = 'p.agent_id = :fdb_ag';
+            $params['fdb_ag'] = (int) $filters['agent_id'];
         }
 
-        // Build query
+        if (!empty($filters['featured_only'])) {
+            $where[] = 'p.is_featured = 1';
+        }
+
+        if (!empty($filters['geo_lat']) && !empty($filters['geo_lng'])) {
+            $lat = filter_var($filters['geo_lat'], FILTER_VALIDATE_FLOAT);
+            $lng = filter_var($filters['geo_lng'], FILTER_VALIDATE_FLOAT);
+
+            if ($lat !== false && $lng !== false && $lat >= -90 && $lat <= 90 && $lng >= -180 && $lng <= 180) {
+                $miles = isset($filters['geo_radius_mi'])
+                    ? (float) $filters['geo_radius_mi']
+                    : 75.0;
+                $miles = max(5.0, min(500.0, $miles));
+
+                $dlat = $miles / 69.172;
+                $dlng = $miles / (69.172 * max(cos(deg2rad($lat)), 0.2));
+
+                $where[] = '(p.latitude IS NOT NULL AND p.longitude IS NOT NULL AND p.latitude BETWEEN :fdb_la0 AND :fdb_la1 AND p.longitude BETWEEN :fdb_lo0 AND :fdb_lo1)';
+                $params['fdb_la0'] = $lat - $dlat;
+                $params['fdb_la1'] = $lat + $dlat;
+                $params['fdb_lo0'] = $lng - $dlng;
+                $params['fdb_lo1'] = $lng + $dlng;
+            }
+        }
+
+        return [$where, $params];
+    }
+
+    /**
+     * Get all properties with filters
+     *
+     * @param array<string,mixed> $filters
+     */
+    public function getAll($filters = [], $page = 1, $perPage = ITEMS_PER_PAGE) {
+        [$where, $params] = $this->compilePublicListingConditions($filters);
+
         $whereClause = implode(' AND ', $where);
-        $offset = ($page - 1) * $perPage;
+        $offset      = ($page - 1) * $perPage;
 
         $sql = "SELECT p.*, 
                 CONCAT(a.first_name, ' ', a.last_name) as agent_name,
@@ -196,66 +381,89 @@ class Property {
 
     /**
      * Get total count with filters
+     *
+     * @param array<string,mixed> $filters
      */
     public function getTotalCount($filters = []) {
-        $where = ['p.property_status = :status'];
-        $params = ['status' => $filters['status'] ?? 'active'];
-
-        if (!empty($filters['keyword'])) {
-            $where[] = "(p.title LIKE :keyword OR p.description LIKE :keyword OR p.address LIKE :keyword OR p.city LIKE :keyword)";
-            $params['keyword'] = '%' . $filters['keyword'] . '%';
-        }
-
-        if (!empty($filters['city'])) {
-            $where[] = "p.city LIKE :city";
-            $params['city'] = '%' . $filters['city'] . '%';
-        }
-
-        if (!empty($filters['state'])) {
-            $where[] = "p.state = :state";
-            $params['state'] = $filters['state'];
-        }
-
-        if (!empty($filters['property_type'])) {
-            $where[] = "p.property_type_id = :property_type";
-            $params['property_type'] = $filters['property_type'];
-        }
-
-        if (!empty($filters['status_type'])) {
-            $where[] = "p.status = :status_type";
-            $params['status_type'] = $filters['status_type'];
-        }
-
-        if (!empty($filters['min_price'])) {
-            $where[] = "p.price >= :min_price";
-            $params['min_price'] = $filters['min_price'];
-        }
-
-        if (!empty($filters['max_price'])) {
-            $where[] = "p.price <= :max_price";
-            $params['max_price'] = $filters['max_price'];
-        }
-
-        if (!empty($filters['bedrooms'])) {
-            $where[] = "p.bedrooms >= :bedrooms";
-            $params['bedrooms'] = $filters['bedrooms'];
-        }
-
-        if (!empty($filters['bathrooms'])) {
-            $where[] = "p.bathrooms >= :bathrooms";
-            $params['bathrooms'] = $filters['bathrooms'];
-        }
-
-        if (!empty($filters['agent_id'])) {
-            $where[] = "p.agent_id = :agent_id";
-            $params['agent_id'] = $filters['agent_id'];
-        }
-
-        $whereClause = implode(' AND ', $where);
-
-        $sql = "SELECT COUNT(*) FROM properties p WHERE {$whereClause}";
+        [$where, $params] = $this->compilePublicListingConditions($filters);
+        $whereClause      = implode(' AND ', $where);
+        $sql              = "SELECT COUNT(*) FROM properties p WHERE {$whereClause}";
 
         return $this->db->query($sql, $params)->fetchColumn();
+    }
+
+    /**
+     * Platform inventory snapshot for Market Reports (active listings only).
+     *
+     * @return array<string, mixed>
+     */
+    public function getMarketSnapshotTotals() {
+        $sql = "SELECT COUNT(*) AS total_active,
+                COALESCE(SUM(CASE WHEN status = 'sale' THEN 1 ELSE 0 END), 0) AS sale_count,
+                COALESCE(SUM(CASE WHEN status = 'rent' THEN 1 ELSE 0 END), 0) AS rent_count,
+                AVG(CASE WHEN status = 'sale' THEN price END) AS avg_sale_price,
+                AVG(CASE WHEN status = 'rent' THEN price END) AS avg_rent_price,
+                MIN(CASE WHEN status = 'sale' THEN price END) AS min_sale_price,
+                MAX(CASE WHEN status = 'sale' THEN price END) AS max_sale_price,
+                MIN(CASE WHEN status = 'rent' THEN price END) AS min_rent_price,
+                MAX(CASE WHEN status = 'rent' THEN price END) AS max_rent_price
+            FROM properties
+            WHERE property_status = 'active'";
+
+        $row = $this->db->query($sql)->fetch();
+
+        return is_array($row) ? $row : [];
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function getMarketStatsByState($limit = 15) {
+        $limit = max(1, min(50, (int) $limit));
+        $sql = "SELECT state,
+                COUNT(*) AS listing_count,
+                COALESCE(SUM(CASE WHEN status = 'sale' THEN 1 ELSE 0 END), 0) AS sale_count,
+                COALESCE(SUM(CASE WHEN status = 'rent' THEN 1 ELSE 0 END), 0) AS rent_count,
+                AVG(CASE WHEN status = 'sale' THEN price END) AS avg_sale_price,
+                AVG(CASE WHEN status = 'rent' THEN price END) AS avg_rent_price
+            FROM properties
+            WHERE property_status = 'active'
+              AND state IS NOT NULL
+              AND TRIM(state) <> ''
+            GROUP BY state
+            ORDER BY listing_count DESC
+            LIMIT {$limit}";
+
+        $rows = $this->db->query($sql)->fetchAll();
+
+        return is_array($rows) ? $rows : [];
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function getMarketStatsByMetro($limit = 12) {
+        $limit = max(1, min(50, (int) $limit));
+        $sql = "SELECT TRIM(city) AS city,
+                TRIM(state) AS state,
+                COUNT(*) AS listing_count,
+                COALESCE(SUM(CASE WHEN status = 'sale' THEN 1 ELSE 0 END), 0) AS sale_count,
+                COALESCE(SUM(CASE WHEN status = 'rent' THEN 1 ELSE 0 END), 0) AS rent_count,
+                AVG(CASE WHEN status = 'sale' THEN price END) AS avg_sale_price,
+                AVG(CASE WHEN status = 'rent' THEN price END) AS avg_rent_price
+            FROM properties
+            WHERE property_status = 'active'
+              AND city IS NOT NULL
+              AND TRIM(city) <> ''
+              AND state IS NOT NULL
+              AND TRIM(state) <> ''
+            GROUP BY TRIM(city), TRIM(state)
+            ORDER BY listing_count DESC
+            LIMIT {$limit}";
+
+        $rows = $this->db->query($sql)->fetchAll();
+
+        return is_array($rows) ? $rows : [];
     }
 
     /**

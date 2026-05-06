@@ -35,8 +35,11 @@ class Page {
         }
 
         if ($search !== '') {
-            $where[] = '(title LIKE :search OR slug LIKE :search OR content LIKE :search)';
-            $params['search'] = '%' . $search . '%';
+            $pat = '%' . $search . '%';
+            $where[] = '(title LIKE :cms_s1 OR slug LIKE :cms_s2 OR content LIKE :cms_s3)';
+            $params['cms_s1'] = $pat;
+            $params['cms_s2'] = $pat;
+            $params['cms_s3'] = $pat;
         }
 
         $whereSql = !empty($where) ? implode(' AND ', $where) : '';

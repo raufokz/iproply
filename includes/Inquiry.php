@@ -35,8 +35,11 @@ class Inquiry {
         }
 
         if (!empty($filters['search'])) {
-            $where[] = "(i.name LIKE :search OR i.email LIKE :search OR i.message LIKE :search)";
-            $params['search'] = '%' . $filters['search'] . '%';
+            $pat = '%' . $filters['search'] . '%';
+            $where[] = '(i.name LIKE :inq_q1 OR i.email LIKE :inq_q2 OR i.message LIKE :inq_q3)';
+            $params['inq_q1'] = $pat;
+            $params['inq_q2'] = $pat;
+            $params['inq_q3'] = $pat;
         }
 
         $whereClause = implode(' AND ', $where);
@@ -99,6 +102,14 @@ class Inquiry {
         if (!empty($filters['status'])) {
             $where[] = "status = :status";
             $params['status'] = $filters['status'];
+        }
+
+        if (!empty($filters['search'])) {
+            $pat = '%' . $filters['search'] . '%';
+            $where[] = '(name LIKE :inq_c1 OR email LIKE :inq_c2 OR message LIKE :inq_c3)';
+            $params['inq_c1'] = $pat;
+            $params['inq_c2'] = $pat;
+            $params['inq_c3'] = $pat;
         }
 
         $whereClause = implode(' AND ', $where);

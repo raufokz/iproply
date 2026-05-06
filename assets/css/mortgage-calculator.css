@@ -1,0 +1,185 @@
+/* Mortgage calculator */
+
+.mc-hero {
+  padding: 130px 0 48px;
+  background: linear-gradient(135deg, var(--navy-900) 0%, var(--navy-700) 100%);
+  color: #fff;
+}
+
+.mc-hero h1 {
+  font-size: clamp(1.85rem, 3.5vw, 2.75rem);
+  font-weight: 800;
+  margin: 0 0 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.mc-hero p {
+  margin: 0;
+  max-width: 56ch;
+  color: rgba(255, 255, 255, 0.76);
+  line-height: 1.65;
+}
+
+.mc-wrap {
+  padding: 3rem 0 4.5rem;
+  background: var(--cream);
+}
+
+.mc-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .mc-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mc-panel {
+  background: #fff;
+  border: 1px solid var(--warm-200);
+  border-radius: var(--radius-xl);
+  padding: 1.75rem 1.85rem;
+  box-shadow: var(--shadow-md);
+}
+
+.mc-panel h2 {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--navy-900);
+  margin: 0 0 1.25rem;
+}
+
+.mc-field {
+  margin-bottom: 1.1rem;
+}
+
+.mc-field label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 0.35rem;
+}
+
+.mc-field input,
+.mc-field select {
+  width: 100%;
+  padding: 0.72rem 0.85rem;
+  border: 1px solid var(--warm-200);
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.mc-field input:focus,
+.mc-field select:focus {
+  outline: none;
+  border-color: rgba(200, 166, 99, 0.75);
+  box-shadow: 0 0 0 3px rgba(200, 166, 99, 0.2);
+}
+
+.mc-field-hint {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 0.28rem;
+}
+
+.mc-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 520px) {
+  .mc-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mc-results-total {
+  font-size: 2.15rem;
+  font-weight: 800;
+  color: var(--navy-900);
+  letter-spacing: -0.02em;
+  margin: 0 0 1.25rem;
+}
+
+.mc-results-total span {
+  color: var(--gold-500, #c8a663);
+}
+
+.mc-breakdown {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.mc-breakdown li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--secondary);
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+}
+
+.mc-breakdown li:last-child {
+  border-bottom: none;
+}
+
+.mc-breakdown strong {
+  color: var(--navy-900);
+  font-weight: 700;
+}
+
+.mc-pill {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--navy-700);
+  background: rgba(200, 166, 99, 0.15);
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  margin-bottom: 0.75rem;
+}
+
+.mc-error {
+  display: none;
+  padding: 0.75rem 1rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  color: #b91c1c;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.mc-error.is-visible {
+  display: block;
+}
+
+.mc-disclaimer {
+  margin-top: 2rem;
+  padding: 1.25rem 1.35rem;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid var(--warm-200);
+  border-radius: var(--radius-lg);
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  max-width: 900px;
+}
+
+.mc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}

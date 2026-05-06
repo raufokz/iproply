@@ -98,8 +98,11 @@ if ($status !== 'all') {
 
 if (!empty($search)) {
     if (!empty($conditions)) $conditions .= ' AND ';
-    $conditions           .= "(p.title LIKE :search OR p.description LIKE :search OR p.address LIKE :search)";  // FIX: prefix p.
-    $params['search']      = "%{$search}%";
+    $pat = "%{$search}%";
+    $conditions .= '(p.title LIKE :ap_s1 OR p.description LIKE :ap_s2 OR p.address LIKE :ap_s3)';
+    $params['ap_s1'] = $pat;
+    $params['ap_s2'] = $pat;
+    $params['ap_s3'] = $pat;
 }
 
 // Get total count — must JOIN agents too so the same p.-prefixed conditions work

@@ -10,20 +10,45 @@ class Blog {
         $this->db = Database::getInstance();
     }
 
-    public function getPublished($page = 1, $perPage = 9) {
-        $offset = max(0, ($page - 1) * $perPage);
+    public function getPublished($page = 1, $perPage = 9, $search = '') {
+        $page = max(1, (int) $page);
+        $perPage = max(1, (int) $perPage);
+        $offset = ($page - 1) * $perPage;
+
+        $params = ['status' => 'published'];
+        $where = 'b.status = :status';
+        $search = trim((string) $search);
+        if ($search !== '') {
+            $pat = '%' . $search . '%';
+            $where .= ' AND (b.title LIKE :blog_q1 OR b.excerpt LIKE :blog_q2 OR b.content LIKE :blog_q3)';
+            $params['blog_q1'] = $pat;
+            $params['blog_q2'] = $pat;
+            $params['blog_q3'] = $pat;
+        }
+
         $sql = "SELECT b.*, CONCAT(a.first_name, ' ', a.last_name) AS author_name
                 FROM blogs b
                 LEFT JOIN admins a ON b.created_by = a.id
-                WHERE b.status = 'published'
+                WHERE {$where}
                 ORDER BY COALESCE(b.published_at, b.created_at) DESC
                 LIMIT {$perPage} OFFSET {$offset}";
 
-        return $this->db->query($sql)->fetchAll();
+        return $this->db->query($sql, $params)->fetchAll();
     }
 
-    public function countPublished() {
-        return (int) $this->db->query("SELECT COUNT(*) FROM blogs WHERE status = 'published'")->fetchColumn();
+    public function countPublished($search = '') {
+        $params = [];
+        $where = "status = 'published'";
+        $search = trim((string) $search);
+        if ($search !== '') {
+            $pat = '%' . $search . '%';
+            $where .= ' AND (title LIKE :blog_c1 OR excerpt LIKE :blog_c2 OR content LIKE :blog_c3)';
+            $params['blog_c1'] = $pat;
+            $params['blog_c2'] = $pat;
+            $params['blog_c3'] = $pat;
+        }
+
+        return (int) $this->db->query("SELECT COUNT(*) FROM blogs WHERE {$where}", $params)->fetchColumn();
     }
 
     public function getBySlug($slug) {
@@ -50,8 +75,11 @@ class Blog {
         }
 
         if ($search !== '') {
-            $where[] = '(b.title LIKE :search OR b.content LIKE :search OR b.excerpt LIKE :search)';
-            $params['search'] = '%' . $search . '%';
+            $pat = '%' . $search . '%';
+            $where[] = '(b.title LIKE :blog_ad1 OR b.content LIKE :blog_ad2 OR b.excerpt LIKE :blog_ad3)';
+            $params['blog_ad1'] = $pat;
+            $params['blog_ad2'] = $pat;
+            $params['blog_ad3'] = $pat;
         }
 
         $whereSql = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';

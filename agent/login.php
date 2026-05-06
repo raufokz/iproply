@@ -15,15 +15,32 @@ if (is_agent()) {
 $auth = new Auth();
 $errors = [];
 
+$workspacesForPicker = WorkspaceContext::activeList();
+$selectedWorkspaceId = sanitize($_POST['workspace_id'] ?? '');
+if ($selectedWorkspaceId === '' && ($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+    $prefill = WorkspaceContext::prefillId();
+    $selectedWorkspaceId = $prefill ?: '';
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = $_POST['username'] ?? '';
     $password = $_POST['password'] ?? '';
 
-    if ($auth->agentLogin($username, $password)) {
-        set_flash_message('success', 'Welcome back, ' . $_SESSION['user_name'] . '!');
-        redirect('agent/dashboard.php');
-    } else {
-        $errors = $auth->getErrors();
+    $ws = WorkspaceContext::validateForForm($_POST['workspace_id'] ?? null);
+    if (!$ws['ok']) {
+        foreach ($ws['errors'] as $msg) {
+            $errors[] = $msg;
+        }
+    }
+
+    if (empty($errors)) {
+        if ($auth->agentLogin($username, $password)) {
+            WorkspaceContext::persistToSession($ws['resolved_id'], $ws['resolved_name']);
+            WorkspaceContext::clearPrefill();
+            set_flash_message('success', 'Welcome back, ' . $_SESSION['user_name'] . '!');
+            redirect('agent/dashboard.php');
+        }
+        $errors = array_merge($errors, $auth->getErrors());
     }
 }
 
@@ -39,228 +56,70 @@ $pageTitle = 'Agent Login';
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary: #1e3b5a;
-            --primary-light: #2c5282;
-            --secondary: #f5f5f5;
-            --text-primary: #1e3b5a;
-            --text-secondary: #666666;
-            --border: #e0e0e0;
-            --error: #e53e3e;
-            --success: #48bb78;
-            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
-            --radius-lg: 12px;
-        }
-        
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        
-        body {
-            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-        }
-        
-        .login-container {
-            width: 100%;
-            max-width: 420px;
-        }
-        
-        .login-card {
-            background: white;
-            border-radius: var(--radius-lg);
-            padding: 2.5rem;
-            box-shadow: var(--shadow-lg);
-        }
-        
-        .login-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        
-        .login-header h1 {
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 0.5rem;
-        }
-        
-        .login-header p {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-        }
-        
-        .form-group {
-            margin-bottom: 1.25rem;
-        }
-        
-        .form-group label {
-            display: block;
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-            margin-bottom: 0.5rem;
-        }
-        
-        .form-group input {
-            width: 100%;
-            padding: 0.875rem 1rem;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.2s;
-        }
-        
-        .form-group input:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-        
-        .btn {
-            width: 100%;
-            padding: 1rem;
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-        
-        .btn:hover {
-            background-color: var(--primary-light);
-        }
-        
-        .alert {
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
-            font-size: 0.875rem;
-        }
-        
-        .alert-error {
-            background-color: #fff5f5;
-            color: var(--error);
-            border: 1px solid #fc8181;
-        }
-        
-        .login-footer {
-            text-align: center;
-            margin-top: 1.5rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid var(--border);
-        }
-        
-        .login-footer a {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 500;
-        }
-        
-        .login-footer a:hover {
-            text-decoration: underline;
-        }
-        
-        .logo {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        
-        .logo a {
-            font-size: 2rem;
-            font-weight: 700;
-            color: white;
-            text-decoration: none;
-        }
-        
-        .remember-forgot {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.25rem;
-            font-size: 0.875rem;
-        }
-        
-        .remember-forgot label {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: var(--text-secondary);
-            cursor: pointer;
-        }
-        
-        .remember-forgot a {
-            color: var(--primary);
-            text-decoration: none;
-        }
-        
-        .remember-forgot a:hover {
-            text-decoration: underline;
-        }
-    </style>
+    <link rel="stylesheet" href="<?php echo asset_url('css/agent-auth.css'); ?>">
 </head>
-<body>
-    <div class="login-container">
-        <div class="logo">
+<body class="auth-body">
+    <div class="auth-shell">
+        <div class="auth-logo">
             <a href="<?php echo base_url(); ?>"><?php echo APP_NAME; ?></a>
         </div>
-        
-        <div class="login-card">
-            <div class="login-header">
-                <h1>Agent Login</h1>
-                <p>Sign in to access your agent dashboard</p>
+
+        <div class="auth-card">
+            <div class="auth-card-head">
+                <h1>Agent sign in</h1>
+                <p><?php
+                    $wsN = count($workspacesForPicker);
+                    if ($wsN > 1) {
+                        echo 'Choose the workspace you want to use, then enter your credentials.';
+                    } elseif ($wsN === 1) {
+                        echo 'You are signing in to the workspace below. Enter your account details to continue.';
+                    } else {
+                        echo 'Enter your credentials to open your dashboard.';
+                    }
+                ?></p>
             </div>
-            
+
             <?php if (!empty($errors)): ?>
-                <div class="alert alert-error">
+                <div class="alert-auth alert-auth-error" role="alert">
                     <?php foreach ($errors as $error): ?>
-                        <p><?php echo sanitize($error); ?></p>
+                        <p style="margin:.25rem 0"><?php echo sanitize($error); ?></p>
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>
-            
-            <form action="" method="POST">
+
+            <form action="" method="POST" novalidate>
+                <?php
+                require __DIR__ . '/partials/workspace-picker.php';
+                ?>
+
                 <div class="form-group">
-                    <label for="username">Username or Email</label>
-                    <input type="text" id="username" name="username" required autofocus>
+                    <label for="username">Username or email</label>
+                    <input type="text" id="username" name="username" required autofocus autocomplete="username"
+                           value="<?php echo sanitize($_POST['username'] ?? ''); ?>">
                 </div>
-                
+
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" name="password" required>
+                    <input type="password" id="password" name="password" required autocomplete="current-password">
                 </div>
-                
-                <div class="remember-forgot">
+
+                <div class="remember-row">
                     <label>
-                        <input type="checkbox" name="remember">
+                        <input type="checkbox" name="remember" value="1">
                         Remember me
                     </label>
                     <a href="forgot-password.php">Forgot password?</a>
                 </div>
-                
-                <button type="submit" class="btn">
+
+                <button type="submit" class="btn-auth-primary">
                     <i class="fas fa-sign-in-alt"></i>
-                    Sign In
+                    Sign in
                 </button>
             </form>
-            
-            <div class="login-footer">
-                <p>Don't have an account? <a href="register.php">Register as Agent</a></p>
-                <p>Are you an admin? <a href="<?php echo base_url('admin/login.php'); ?>">Admin Login</a></p>
+
+            <div class="auth-footer">
+                <p>New to <?php echo APP_NAME; ?>? <a href="register.php">Create an agent account</a></p>
+                <p><a href="<?php echo base_url('admin/login.php'); ?>">Admin sign in</a></p>
             </div>
         </div>
     </div>

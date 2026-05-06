@@ -11,15 +11,33 @@ $pageTitle = 'Insights & Real Estate Guides';
 
 $blogModel = new Blog();
 $page = isset($_GET['page']) ? max(1, (int) $_GET['page']) : 1;
-$perPage = 5; // Reduced for list view
-$posts = $blogModel->getPublished($page, $perPage);
-$totalPosts = $blogModel->countPublished();
-$totalPages = (int) ceil($totalPosts / $perPage);
+$perPage = 5;
+$searchQ = trim((string) ($_GET['q'] ?? ''));
 
-// Fetch recent posts for sidebar
+$totalPosts = $blogModel->countPublished($searchQ);
+$totalPages = $totalPosts > 0 ? max(1, (int) ceil($totalPosts / $perPage)) : 1;
+if ($page > $totalPages) {
+    $page = $totalPages;
+}
+
+$posts = $blogModel->getPublished($page, $perPage, $searchQ);
+
+$metaTitle = 'Blog & Insights | iProply';
+$metaDescription = 'Guides, market perspective, and tips for buyers, renters, sellers, and agents — curated by the iProply team.';
+if ($searchQ !== '') {
+    $metaTitle = 'Search: ' . $searchQ . ' | iProply Blog';
+    $metaDescription = 'Blog posts matching "' . $searchQ . '" on iProply.';
+}
+
+// Sidebar: recent posts (always unfiltered so the rail stays useful while searching)
 $recentPosts = $blogModel->getPublished(1, 4);
 
 include 'partials/header.php';
+
+$blogPaginationQuery = [];
+if ($searchQ !== '') {
+    $blogPaginationQuery['q'] = $searchQ;
+}
 ?>
 
 <!-- Hero Section -->
@@ -27,7 +45,14 @@ include 'partials/header.php';
     <div class="container">
         <span style="color: var(--gold-200); font-family: var(--font-family); text-transform: uppercase; letter-spacing: 0.15em; font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 1rem;">Expert Market Analysis</span>
         <h1 style="font-size: 3.5rem; font-weight: 700; margin-bottom: 1.5rem; font-family: var(--font-family);">iProply Insights</h1>
-        <p style="font-size: 1.1rem; color: rgba(255,255,255,0.8); max-width: 600px; margin: 0 auto;">Master the US real estate market with our curated guides, data-driven tips, and expert investment strategies.</p>
+        <?php if ($searchQ !== ''): ?>
+            <p style="font-size: 1.1rem; color: rgba(255,255,255,0.9); max-width: 640px; margin: 0 auto;">
+                Results for <strong style="color: #fff;"><?php echo sanitize($searchQ); ?></strong>
+                · <a href="<?php echo base_url('blog.php'); ?>" style="color: var(--gold-200); text-decoration: underline;">Clear search</a>
+            </p>
+        <?php else: ?>
+            <p style="font-size: 1.1rem; color: rgba(255,255,255,0.8); max-width: 600px; margin: 0 auto;">Master the US real estate market with our curated guides, data-driven tips, and expert strategies.</p>
+        <?php endif; ?>
     </div>
 </section>
 
@@ -50,8 +75,13 @@ include 'partials/header.php';
                     <?php if (empty($posts)): ?>
                         <div style="padding: 4rem; text-align: center; background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);">
                             <i class="fas fa-pen-nib" style="font-size: 3rem; color: var(--gold-200); margin-bottom: 1rem;"></i>
-                            <h3 style="font-size: 1.5rem; color: var(--navy-800); margin-bottom: 0.5rem;">No Articles Published Yet</h3>
-                            <p style="color: var(--text-secondary);">Our experts are preparing new market insights. Check back soon.</p>
+                            <?php if ($searchQ !== ''): ?>
+                                <h3 style="font-size: 1.5rem; color: var(--navy-800); margin-bottom: 0.5rem;">No matching articles</h3>
+                                <p style="color: var(--text-secondary);">Try another keyword or <a href="<?php echo base_url('blog.php'); ?>">browse all posts</a>.</p>
+                            <?php else: ?>
+                                <h3 style="font-size: 1.5rem; color: var(--navy-800); margin-bottom: 0.5rem;">No articles published yet</h3>
+                                <p style="color: var(--text-secondary);">Our experts are preparing new market insights. Check back soon.</p>
+                            <?php endif; ?>
                         </div>
                     <?php else: ?>
                         <div style="display: flex; flex-direction: column; gap: 2.5rem;">
@@ -102,7 +132,11 @@ include 'partials/header.php';
                         <?php if ($totalPages > 1): ?>
                             <div style="display:flex; justify-content:center; gap:0.5rem; margin-top:4rem;">
                                 <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                                    <a href="<?php echo base_url('blog.php?page=' . $i); ?>"
+                                    <?php
+                                    $blogPaginationQuery['page'] = $i;
+                                    $pageHref = base_url('blog.php?' . http_build_query($blogPaginationQuery));
+                                    ?>
+                                    <a href="<?php echo sanitize($pageHref); ?>"
                                        style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-family: var(--font-family); font-weight: 600; font-size: 0.95rem; transition: all 0.2s ease; <?php echo $i === $page ? 'background: var(--navy-800); color: white; box-shadow: 0 4px 15px rgba(4,20,39,0.2);' : 'background: white; color: var(--navy-800); border: 1px solid var(--border);'; ?>"
                                        onmouseover="<?php if($i !== $page) echo "this.style.borderColor='var(--gold-200)'; this.style.color='var(--gold-200)';"; ?>"
                                        onmouseout="<?php if($i !== $page) echo "this.style.borderColor='var(--border)'; this.style.color='var(--navy-800)';"; ?>">
@@ -120,27 +154,31 @@ include 'partials/header.php';
                     <!-- Search Widget -->
                     <div style="background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.03);">
                         <h4 style="font-family: var(--font-family); font-size: 1.25rem; color: var(--navy-900); margin-bottom: 1rem;">Search Insights</h4>
-                        <form action="blog.php" method="GET" style="position: relative;">
-                            <input type="text" name="q" placeholder="Type keyword..." style="width: 100%; padding: 12px 16px; padding-right: 45px; border: 1px solid var(--border); border-radius: 8px; font-family: var(--font-family); font-size: 0.95rem; outline: none; transition: border-color 0.3s ease;" onfocus="this.style.borderColor='var(--gold-200)'" onblur="this.style.borderColor='var(--border)'">
+                        <form action="<?php echo base_url('blog.php'); ?>" method="GET" style="position: relative;">
+                            <input type="text" name="q" value="<?php echo sanitize($searchQ); ?>" placeholder="Search titles &amp; topics..." style="width: 100%; padding: 12px 16px; padding-right: 45px; border: 1px solid var(--border); border-radius: 8px; font-family: var(--font-family); font-size: 0.95rem; outline: none; transition: border-color 0.3s ease;" onfocus="this.style.borderColor='var(--gold-200)'" onblur="this.style.borderColor='var(--border)'">
                             <button type="submit" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: var(--navy-700); cursor: pointer;">
                                 <i class="fas fa-search"></i>
                             </button>
                         </form>
                     </div>
 
-                    <!-- Categories Widget -->
+                    <!-- Topic shortcuts (keyword search) -->
                     <div style="background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.03);">
-                        <h4 style="font-family: var(--font-family); font-size: 1.25rem; color: var(--navy-900); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--warm-200);">Categories</h4>
+                        <h4 style="font-family: var(--font-family); font-size: 1.25rem; color: var(--navy-900); margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--warm-200);">Popular topics</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0 0 1rem 0;">Quick keyword searches — posts vary as we publish.</p>
                         <ul style="list-style: none; padding: 0; margin: 0;">
                             <?php
-                            $categories = ['Buying Guides' => 12, 'Selling Tips' => 8, 'Market Trends' => 5, 'Investment' => 9, 'Home Improvement' => 4];
-                            foreach($categories as $cat => $count):
+                            $topicShortcuts = [
+                                'Buying' => 'buying',
+                                'Selling' => 'selling',
+                                'Renting' => 'rent',
+                                'Market trends' => 'market',
+                            ];
+                            foreach ($topicShortcuts as $label => $qq):
+                                $topicHref = base_url('blog.php?' . http_build_query(['q' => $qq]));
                             ?>
-                            <li style="margin-bottom: 0.75rem; border-bottom: 1px dashed var(--warm-200); padding-bottom: 0.75rem;">
-                                <a href="#" style="display: flex; justify-content: space-between; color: var(--text-secondary); text-decoration: none; font-size: 0.95rem; transition: color 0.2s ease;" onmouseover="this.style.color='var(--navy-800)'" onmouseout="this.style.color='var(--text-secondary)'">
-                                    <span><?php echo $cat; ?></span>
-                                    <span style="background: var(--warm-100); padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; color: var(--navy-700); font-family: var(--font-family);"><?php echo $count; ?></span>
-                                </a>
+                            <li style="margin-bottom: 0.65rem;">
+                                <a href="<?php echo sanitize($topicHref); ?>" style="color: var(--navy-700); text-decoration: none; font-size: 0.95rem; border-bottom: 1px solid transparent; transition: border-color 0.2s ease;" onmouseover="this.style.borderBottomColor='var(--gold-200)'" onmouseout="this.style.borderBottomColor='transparent'"><?php echo sanitize($label); ?></a>
                             </li>
                             <?php endforeach; ?>
                         </ul>
@@ -178,8 +216,10 @@ include 'partials/header.php';
                         <i class="far fa-envelope-open" style="font-size: 2.5rem; color: var(--gold-200); margin-bottom: 1rem;"></i>
                         <h4 style="font-family: var(--font-family); font-size: 1.5rem; margin-bottom: 0.5rem;">Join Our Newsletter</h4>
                         <p style="font-size: 0.9rem; color: rgba(255,255,255,0.8); margin-bottom: 1.5rem;">Get the latest real estate market insights directly to your inbox.</p>
-                        <form action="#" method="POST">
-                            <input type="email" placeholder="Your Email Address" style="width: 100%; padding: 12px 16px; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; font-family: var(--font-family); font-size: 0.95rem; background: rgba(255,255,255,0.1); color: white; outline: none; margin-bottom: 1rem;">
+                        <form action="<?php echo base_url('subscribe.php'); ?>" method="POST">
+                            <input type="hidden" name="<?php echo CSRF_TOKEN_NAME; ?>" value="<?php echo generate_csrf_token(); ?>">
+                            <label for="blog-newsletter-email" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">Email address</label>
+                            <input id="blog-newsletter-email" type="email" name="email" required placeholder="Your email address" style="width: 100%; padding: 12px 16px; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; font-family: var(--font-family); font-size: 0.95rem; background: rgba(255,255,255,0.1); color: white; outline: none; margin-bottom: 1rem;">
                             <button type="submit" style="width: 100%; padding: 12px; border: none; border-radius: 8px; background: linear-gradient(135deg, var(--gold-100) 0%, var(--gold-200) 100%); color: var(--navy-900); font-family: var(--font-family); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; transition: transform 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">Subscribe</button>
                         </form>
                     </div>

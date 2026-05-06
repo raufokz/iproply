@@ -6,47 +6,37 @@
 require_once 'config/config.php';
 require_once 'includes/Database.php';
 require_once 'includes/Property.php';
+require_once 'includes/listing-filters.php';
 
 // Set current page
 $currentPage = 'listings';
-$pageTitle = 'Property Listings';
+$pageTitle   = 'Property Listings';
 
-// Initialize Property model
 $propertyModel = new Property();
 
-// Get filter parameters
-$filters = [
-    'keyword' => $_GET['keyword'] ?? '',
-    'city' => $_GET['city'] ?? '',
-    'state' => $_GET['state'] ?? '',
-    'property_type' => $_GET['type'] ?? '',
-    'status_type' => $_GET['status'] ?? '',
-    'min_price' => $_GET['min_price'] ?? '',
-    'max_price' => $_GET['max_price'] ?? '',
-    'bedrooms' => $_GET['bedrooms'] ?? '',
-    'bathrooms' => $_GET['bathrooms'] ?? ''
-];
-
-// Remove empty filters (but keep zero values such as 0 if needed)
-$filters = array_filter($filters, function($value) {
-    return $value !== '' && $value !== null;
-});
-
-// Pagination
-$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$page    = isset($_GET['page']) ? max(1, (int) $_GET['page']) : 1;
 $perPage = ITEMS_PER_PAGE;
 
-// Get properties
-$properties = $propertyModel->getAll($filters, $page, $perPage);
-$totalProperties = $propertyModel->getTotalCount($filters);
-$totalPages = ceil($totalProperties / $perPage);
+// Canonical filter map (PDO-safe placeholders live in Property::compilePublicListingConditions).
+$requestFilters = listing_filters_from_request($_GET);
 
-// Get property types and states for filters
+$result = $propertyModel->searchListingsPaginated($requestFilters, $page, $perPage);
+
+$properties               = $result['properties'];
+$totalProperties          = (int) $result['total'];
+$effectiveFilters         = $result['effective_filters'];
+$fallbackBannerMessage    = $result['fallback_message'];
+
+$paginationBaseQuery = listing_filters_to_query($effectiveFilters);
+
+$totalPages = $totalProperties > 0 ? (int) ceil($totalProperties / $perPage) : 1;
+
 $propertyTypes = $propertyModel->getPropertyTypes();
-$states = $propertyModel->getStates();
+$states        = $propertyModel->getStates();
 
-// Include header
 include 'partials/header.php';
+
+$selectedState = isset($_GET['state']) ? strtoupper(trim((string) $_GET['state'])) : '';
 ?>
 
 <!-- Page Header -->
@@ -61,42 +51,77 @@ include 'partials/header.php';
 <section class="filter-bar">
     <div class="container">
         <form action="listings.php" method="GET" class="filter-form">
+            <input type="hidden" name="lat" value="<?php echo sanitize($_GET['lat'] ?? ''); ?>">
+            <input type="hidden" name="lng" value="<?php echo sanitize($_GET['lng'] ?? ''); ?>">
+            <?php if (!empty($_GET['radius_mi']) && is_numeric($_GET['radius_mi'])): ?>
+                <input type="hidden" name="radius_mi" value="<?php echo sanitize($_GET['radius_mi']); ?>">
+            <?php endif; ?>
+            <input type="hidden" name="city" value="<?php echo sanitize($_GET['city'] ?? ''); ?>">
+            <?php if (!empty($_GET['featured'])): ?>
+                <input type="hidden" name="featured" value="1">
+            <?php endif; ?>
+            <?php if (!empty($_GET['agent']) && ctype_digit((string) $_GET['agent'])): ?>
+                <input type="hidden" name="agent" value="<?php echo sanitize($_GET['agent']); ?>">
+            <?php endif; ?>
+
             <div class="filter-group">
-                <label>Location</label>
-                <input type="text" name="keyword" placeholder="City, state, or keyword" value="<?php echo sanitize($_GET['keyword'] ?? ''); ?>">
+                <label for="list-keyword">Keywords / address / ZIP</label>
+                <input type="text" name="keyword" id="list-keyword" placeholder="City, address, ZIP, or keyword" value="<?php echo sanitize($_GET['keyword'] ?? ($_GET['search'] ?? '')); ?>">
             </div>
-            
+
             <div class="filter-group">
-                <label>Property Type</label>
-                <select name="type">
+                <label for="list-state">State</label>
+                <select name="state" id="list-state">
+                    <option value="">All states</option>
+                    <?php foreach ((array) $states as $st): ?>
+                        <option value="<?php echo sanitize($st); ?>" <?php echo $selectedState === $st ? 'selected' : ''; ?>>
+                            <?php echo sanitize($st); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="list-type">Property Type</label>
+                <select name="type" id="list-type">
                     <option value="">All Types</option>
                     <?php foreach ($propertyTypes as $type): ?>
-                        <option value="<?php echo sanitize($type['id']); ?>" <?php echo ($_GET['type'] ?? '') == $type['id'] ? 'selected' : ''; ?>>
+                        <option value="<?php echo sanitize($type['id']); ?>" <?php echo (string) ($_GET['type'] ?? '') === (string) $type['id'] ? 'selected' : ''; ?>>
                             <?php echo sanitize($type['name']); ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
             </div>
-            
+
             <div class="filter-group">
-                <label>Status</label>
-                <select name="status">
+                <label for="list-status">Status</label>
+                <select name="status" id="list-status">
                     <option value="">All</option>
-                    <option value="sale" <?php echo ($_GET['status'] ?? '') == 'sale' ? 'selected' : ''; ?>>For Sale</option>
-                    <option value="rent" <?php echo ($_GET['status'] ?? '') == 'rent' ? 'selected' : ''; ?>>For Rent</option>
+                    <option value="sale" <?php echo (($_GET['status'] ?? '') === 'sale') ? 'selected' : ''; ?>>For Sale</option>
+                    <option value="rent" <?php echo (($_GET['status'] ?? '') === 'rent') ? 'selected' : ''; ?>>For Rent</option>
                 </select>
             </div>
-            
+
             <div class="filter-group">
-                <label>Min Price</label>
-                <input type="number" name="min_price" placeholder="$0" value="<?php echo sanitize($_GET['min_price'] ?? ''); ?>">
+                <label for="list-minp">Min Price</label>
+                <input type="number" name="min_price" id="list-minp" placeholder="$0" min="0" step="1000" value="<?php echo sanitize($_GET['min_price'] ?? ''); ?>">
             </div>
-            
+
             <div class="filter-group">
-                <label>Max Price</label>
-                <input type="number" name="max_price" placeholder="No max" value="<?php echo sanitize($_GET['max_price'] ?? ''); ?>">
+                <label for="list-maxp">Max Price</label>
+                <input type="number" name="max_price" id="list-maxp" placeholder="No max" min="0" step="1000" value="<?php echo sanitize($_GET['max_price'] ?? ''); ?>">
             </div>
-            
+
+            <div class="filter-group">
+                <label for="list-beds">Beds min</label>
+                <input type="number" name="bedrooms" id="list-beds" placeholder="Any" min="0" step="1" value="<?php echo sanitize($_GET['bedrooms'] ?? ''); ?>">
+            </div>
+
+            <div class="filter-group">
+                <label for="list-baths">Baths min</label>
+                <input type="number" name="bathrooms" id="list-baths" placeholder="Any" min="0" step="0.5" value="<?php echo sanitize($_GET['bathrooms'] ?? ''); ?>">
+            </div>
+
             <div class="filter-actions">
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-search"></i> Search
@@ -107,20 +132,35 @@ include 'partials/header.php';
     </div>
 </section>
 
-<!-- Listings Section -->
 <section class="section">
     <div class="container">
+
+        <?php if (!empty($_GET['lat']) && !empty($_GET['lng'])): ?>
+            <p class="listings-geo-note" style="margin:0 0 1rem; font-size:0.9rem; color: var(--text-secondary);">
+                <i class="fas fa-location-crosshairs" aria-hidden="true"></i>
+                Showing homes near your selected location<?php echo !empty($_GET['radius_mi']) ? ' (about ' . (int) $_GET['radius_mi'] . ' mi radius).' : '.'; ?>
+            </p>
+        <?php endif; ?>
+
+        <?php if ($fallbackBannerMessage !== null): ?>
+            <div class="alert alert-info" role="status" style="margin-bottom: 1.5rem;">
+                <i class="fas fa-info-circle" aria-hidden="true"></i>
+                <?php echo sanitize($fallbackBannerMessage); ?>
+                <span style="display:block;margin-top:0.5rem;font-size:0.9rem;">You can widen price or remove filters anytime using the toolbar above.</span>
+            </div>
+        <?php endif; ?>
+
         <div class="listings-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
             <p style="color: var(--text-secondary);">
-                Showing <?php echo is_array($properties) ? count($properties) : 0; ?> of <?php echo intval($totalProperties); ?> properties
+                Showing <?php echo is_array($properties) ? count($properties) : 0; ?> of <?php echo $totalProperties; ?> properties
             </p>
         </div>
-        
+
         <?php if (empty($properties)): ?>
             <div class="empty-state">
                 <i class="fas fa-home"></i>
                 <h3>No properties found</h3>
-                <p>Try adjusting your search criteria to find more properties.</p>
+                <p>Try clearing the map radius, widening your price band, or searching by state.</p>
             </div>
         <?php else: ?>
             <div class="property-grid">
@@ -131,22 +171,22 @@ include 'partials/header.php';
                                 <?php if (!empty($property['primary_image'])): ?>
                                     <img src="<?php echo UPLOAD_URL . 'properties/' . sanitize($property['primary_image']); ?>" alt="<?php echo sanitize($property['title']); ?>">
                                 <?php else: ?>
-                                    <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&h=400&fit=crop" alt="Property">
+                                    <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&amp;h=400&amp;fit=crop" alt="Property placeholder">
                                 <?php endif; ?>
-                                
+
                                 <span class="property-badge badge-<?php echo sanitize($property['status']); ?>">
                                     For <?php echo ucfirst(sanitize($property['status'])); ?>
                                 </span>
-                                
+
                                 <?php if (!empty($property['is_featured'])): ?>
                                     <span class="property-badge badge-featured" style="left: auto; right: 15px;">Featured</span>
                                 <?php endif; ?>
-                                
+
                                 <div class="property-price">
                                     <?php echo format_price($property['price'], $property['status']); ?>
                                 </div>
                             </div>
-                            
+
                             <div class="property-content">
                                 <h3 class="property-title"><?php echo sanitize($property['title']); ?></h3>
                                 <div class="property-location">
@@ -163,13 +203,13 @@ include 'partials/header.php';
                                     <?php if (!empty($property['bathrooms'])): ?>
                                         <div class="property-feature">
                                             <i class="fas fa-bath"></i>
-                                            <span><?php echo intval($property['bathrooms']); ?> Baths</span>
+                                            <span><?php echo htmlspecialchars((string) $property['bathrooms'], ENT_QUOTES, 'UTF-8'); ?> Baths</span>
                                         </div>
                                     <?php endif; ?>
                                     <?php if (!empty($property['area_sqft'])): ?>
                                         <div class="property-feature">
                                             <i class="fas fa-ruler-combined"></i>
-                                            <span><?php echo number_format(intval($property['area_sqft'])); ?> sqft</span>
+                                            <span><?php echo number_format((int) $property['area_sqft']); ?> sqft</span>
                                         </div>
                                     <?php endif; ?>
                                 </div>
@@ -178,28 +218,32 @@ include 'partials/header.php';
                     </div>
                 <?php endforeach; ?>
             </div>
-            
-            <!-- Pagination -->
+
             <?php if ($totalPages > 1): ?>
                 <div class="pagination">
+                    <?php
+                    $prevQ = array_merge($paginationBaseQuery, ['page' => $page - 1]);
+                    $nextQ = array_merge($paginationBaseQuery, ['page' => $page + 1]);
+                    ?>
+
                     <?php if ($page > 1): ?>
-                        <a href="?<?php echo http_build_query(array_merge($_GET, ['page' => $page - 1])); ?>">
+                        <a href="?<?php echo http_build_query($prevQ); ?>">
                             <i class="fas fa-chevron-left"></i>
                         </a>
                     <?php else: ?>
                         <span class="disabled"><i class="fas fa-chevron-left"></i></span>
                     <?php endif; ?>
-                    
+
                     <?php for ($i = 1; $i <= $totalPages; $i++): ?>
                         <?php if ($i == $page): ?>
                             <span class="active"><?php echo $i; ?></span>
                         <?php else: ?>
-                            <a href="?<?php echo http_build_query(array_merge($_GET, ['page' => $i])); ?>"><?php echo $i; ?></a>
+                            <a href="?<?php echo http_build_query(array_merge($paginationBaseQuery, ['page' => $i])); ?>"><?php echo $i; ?></a>
                         <?php endif; ?>
                     <?php endfor; ?>
-                    
+
                     <?php if ($page < $totalPages): ?>
-                        <a href="?<?php echo http_build_query(array_merge($_GET, ['page' => $page + 1])); ?>">
+                        <a href="?<?php echo http_build_query($nextQ); ?>">
                             <i class="fas fa-chevron-right"></i>
                         </a>
                     <?php else: ?>
@@ -211,7 +255,4 @@ include 'partials/header.php';
     </div>
 </section>
 
-<?php
-// Include footer
-include 'partials/footer.php';
-?>
+<?php include 'partials/footer.php'; ?>

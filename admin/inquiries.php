@@ -31,8 +31,11 @@ if ($status !== 'all') {
 
 if (!empty($search)) {
     if (!empty($conditions)) $conditions .= ' AND ';
-    $conditions .= "(i.name LIKE :search OR i.email LIKE :search OR i.property_id LIKE :search)";
-    $params['search'] = "%{$search}%";
+    $pat = "%{$search}%";
+    $conditions .= '(i.name LIKE :inq_a1 OR i.email LIKE :inq_a2 OR CAST(i.property_id AS CHAR) LIKE :inq_a3)';
+    $params['inq_a1'] = $pat;
+    $params['inq_a2'] = $pat;
+    $params['inq_a3'] = $pat;
 }
 
 // Get total count

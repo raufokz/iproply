@@ -10,6 +10,8 @@ require_once 'includes/Mail.php';
 // Set current page
 $currentPage = 'contact';
 $pageTitle = 'Contact Us';
+$metaTitle = 'Contact Us | iProply';
+$metaDescription = 'Reach iProply for buying, selling, renting, partnerships, and support. Call, email, or send a message — we respond as quickly as we can.';
 
 // Get site settings
 $db = Database::getInstance();
@@ -185,7 +187,7 @@ include 'partials/header.php';
                             
                             <div class="form-group">
                                 <label for="subject">Subject *</label>
-                                <input type="text" id="subject" name="subject" required value="<?php echo sanitize($_POST['subject'] ?? ''); ?>">
+                                <input type="text" id="subject" name="subject" required value="<?php echo sanitize($_POST['subject'] ?? ($_GET['subject'] ?? '')); ?>">
                             </div>
                         </div>
                         

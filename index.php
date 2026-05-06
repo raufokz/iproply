@@ -97,6 +97,7 @@ include 'partials/header.php';
                 <input type="hidden" name="lng"   id="f-lng">
                 <input type="hidden" name="city"  id="f-city">
                 <input type="hidden" name="state" id="f-state">
+                <input type="hidden" name="radius_mi" value="75" id="f-radius">
 
                 <div class="hsp-field">
                     <label class="hsp-label"><i class="fas fa-map-marker-alt"></i> Location</label>

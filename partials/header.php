@@ -57,11 +57,12 @@ $currentPage = $currentPage ?? '';
         <form action="<?php echo base_url('listings.php'); ?>" method="GET">
             <input 
                 type="text" 
-                name="search" 
+                name="keyword" 
                 class="search-overlay-input" 
                 placeholder="Search properties, locations, or keywords..." 
                 aria-label="Search properties"
                 autocomplete="off"
+                value="<?php echo sanitize($_GET['keyword'] ?? ''); ?>"
             >
         </form>
     </div>
@@ -156,6 +157,15 @@ $currentPage = $currentPage ?? '';
                        role="menuitem"
                        <?php echo $currentPage === 'agents' ? 'aria-current="page"' : ''; ?>>
                         Preferred Agents
+                    </a>
+                </li>
+
+                <li class="nav-item" role="none">
+                    <a href="<?php echo base_url('referral-network.php'); ?>"
+                       class="nav-link <?php echo $currentPage === 'referrals' ? 'active' : ''; ?>"
+                       role="menuitem"
+                       <?php echo $currentPage === 'referrals' ? 'aria-current="page"' : ''; ?>>
+                        Referral Network
                     </a>
                 </li>
 
@@ -264,6 +274,7 @@ $currentPage = $currentPage ?? '';
         <li><a href="<?php echo base_url(); ?>"               <?php echo $currentPage==='home'     ? 'aria-current="page"' : ''; ?>>Home</a></li>
         <li><a href="<?php echo base_url('listings.php'); ?>" <?php echo $currentPage==='listings' ? 'aria-current="page"' : ''; ?>>Listings</a></li>
         <li><a href="<?php echo base_url('agents.php'); ?>"   <?php echo $currentPage==='agents'   ? 'aria-current="page"' : ''; ?>>Agents</a></li>
+        <li><a href="<?php echo base_url('referral-network.php'); ?>" <?php echo $currentPage==='referrals' ? 'aria-current="page"' : ''; ?>>Referral Network</a></li>
         <li><a href="<?php echo base_url('about.php'); ?>"    <?php echo $currentPage==='about'    ? 'aria-current="page"' : ''; ?>>About</a></li>
         <li><a href="<?php echo base_url('contact.php'); ?>"  <?php echo $currentPage==='contact'  ? 'aria-current="page"' : ''; ?>>Contact</a></li>
         <li><a href="<?php echo base_url('blog.php'); ?>"     <?php echo $currentPage==='blog'     ? 'aria-current="page"' : ''; ?>>Blog</a></li>

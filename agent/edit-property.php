@@ -1,6 +1,6 @@
 <?php
 /**
- * Realty - Add Property
+ * Realty — Edit Property
  */
 
 require_once '../config/config.php';
@@ -9,28 +9,70 @@ require_once '../includes/Auth.php';
 require_once '../includes/Property.php';
 require_once '../includes/Upload.php';
 
-// Check authentication
 $auth = new Auth();
 $auth->requireAgent();
 
-// Initialize models
 $propertyModel = new Property();
 $upload = new Upload();
 
-// Get property types and categories
 $propertyTypes = $propertyModel->getPropertyTypes();
 $categories = $propertyModel->getCategories();
 
-// Handle form submission
+$propertyId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+if ($propertyId <= 0) {
+    set_flash_message('error', 'Invalid listing.');
+    redirect('agent/properties.php');
+}
+
+$existing = $propertyModel->getById($propertyId);
+if (!$existing || (int)$existing['agent_id'] !== (int)current_user_id()) {
+    set_flash_message('error', 'Listing not found or you do not have access.');
+    redirect('agent/properties.php');
+}
+
+$csvFromJsonField = static function (?string $raw): string {
+    if ($raw === null || $raw === '') {
+        return '';
+    }
+    $decoded = json_decode($raw, true);
+
+    return is_array($decoded) ? implode(', ', $decoded) : $raw;
+};
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    $_POST = [
+        'title'             => $existing['title'],
+        'description'       => $existing['description'],
+        'short_description' => $existing['short_description'] ?? '',
+        'price'             => $existing['price'],
+        'price_type'        => $existing['price_type'] ?? 'fixed',
+        'status_type'       => $existing['status'] ?? 'sale',
+        'bedrooms'          => $existing['bedrooms'],
+        'bathrooms'         => $existing['bathrooms'],
+        'area_sqft'         => $existing['area_sqft'],
+        'lot_size'          => $existing['lot_size'],
+        'year_built'        => $existing['year_built'],
+        'parking_spaces'    => $existing['parking_spaces'],
+        'floors'            => $existing['floors'],
+        'address'           => $existing['address'],
+        'city'              => $existing['city'],
+        'state'             => $existing['state'],
+        'zip_code'          => $existing['zip_code'] ?? '',
+        'property_type_id'  => $existing['property_type_id'] ?? '',
+        'category_id'       => $existing['category_id'] ?? '',
+        'features'          => $csvFromJsonField($existing['features'] ?? ''),
+        'amenities'         => $csvFromJsonField($existing['amenities'] ?? ''),
+        'virtual_tour_url'  => $existing['virtual_tour_url'] ?? '',
+        'video_url'         => $existing['video_url'] ?? '',
+    ];
+}
+
 $errors = [];
-$success = false;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Verify CSRF token
     if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
         $errors[] = 'Invalid request. Please try again.';
     } else {
-        // Validate required fields
         $required = ['title', 'description', 'price', 'address', 'city', 'state'];
         foreach ($required as $field) {
             if (empty($_POST[$field])) {
@@ -39,61 +81,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if (empty($errors)) {
-            // Prepare property data
             $propertyData = [
-                'agent_id' => current_user_id(),
-                'title' => trim($_POST['title']),
-                'description' => trim($_POST['description']),
-                'short_description' => trim($_POST['short_description'] ?? ''),
-                'price' => floatval($_POST['price']),
-                'price_type' => $_POST['price_type'] ?? 'fixed',
-                'status' => $_POST['status_type'] ?? 'sale',
-                'property_status' => 'pending',
-                'bedrooms' => intval($_POST['bedrooms'] ?? 0),
-                'bathrooms' => floatval($_POST['bathrooms'] ?? 0),
-                'area_sqft' => floatval($_POST['area_sqft'] ?? 0),
-                'lot_size' => floatval($_POST['lot_size'] ?? 0),
-                'year_built' => !empty($_POST['year_built']) ? intval($_POST['year_built']) : null,
-                'parking_spaces' => intval($_POST['parking_spaces'] ?? 0),
-                'floors' => intval($_POST['floors'] ?? 1),
-                'address' => trim($_POST['address']),
-                'city' => trim($_POST['city']),
-                'state' => trim($_POST['state']),
-                'zip_code' => trim($_POST['zip_code'] ?? ''),
-                'property_type_id' => !empty($_POST['property_type_id']) ? intval($_POST['property_type_id']) : null,
-                'category_id' => !empty($_POST['category_id']) ? intval($_POST['category_id']) : null,
-                'features' => !empty($_POST['features']) ? json_encode(array_map('trim', explode(',', $_POST['features']))) : null,
-                'amenities' => !empty($_POST['amenities']) ? json_encode(array_map('trim', explode(',', $_POST['amenities']))) : null,
-                'virtual_tour_url' => trim($_POST['virtual_tour_url'] ?? ''),
-                'video_url' => trim($_POST['video_url'] ?? '')
+                'title'               => trim($_POST['title']),
+                'description'         => trim($_POST['description']),
+                'short_description'   => trim($_POST['short_description'] ?? ''),
+                'price'               => floatval($_POST['price']),
+                'price_type'          => $_POST['price_type'] ?? 'fixed',
+                'status'              => $_POST['status_type'] ?? 'sale',
+                'property_status'     => $existing['property_status'],
+                'bedrooms'            => intval($_POST['bedrooms'] ?? 0),
+                'bathrooms'           => floatval($_POST['bathrooms'] ?? 0),
+                'area_sqft'           => floatval($_POST['area_sqft'] ?? 0),
+                'lot_size'            => floatval($_POST['lot_size'] ?? 0),
+                'year_built'          => !empty($_POST['year_built']) ? intval($_POST['year_built']) : null,
+                'parking_spaces'      => intval($_POST['parking_spaces'] ?? 0),
+                'floors'              => intval($_POST['floors'] ?? 1),
+                'address'             => trim($_POST['address']),
+                'city'                => trim($_POST['city']),
+                'state'               => trim($_POST['state']),
+                'zip_code'            => trim($_POST['zip_code'] ?? ''),
+                'property_type_id'    => !empty($_POST['property_type_id']) ? intval($_POST['property_type_id']) : null,
+                'category_id'         => !empty($_POST['category_id']) ? intval($_POST['category_id']) : null,
+                'features'            => !empty($_POST['features']) ? json_encode(array_map('trim', explode(',', $_POST['features']))) : null,
+                'amenities'           => !empty($_POST['amenities']) ? json_encode(array_map('trim', explode(',', $_POST['amenities']))) : null,
+                'virtual_tour_url'    => trim($_POST['virtual_tour_url'] ?? ''),
+                'video_url'           => trim($_POST['video_url'] ?? ''),
             ];
 
-            // Create property
-            $propertyId = $propertyModel->create($propertyData);
-
-            if ($propertyId) {
-                // Handle image uploads
+            if ($propertyModel->update($propertyId, $propertyData)) {
                 if (!empty($_FILES['images']['name'][0])) {
                     $uploadedImages = $upload->uploadMultiple($_FILES['images'], 'properties', [
-                        'resize' => true,
-                        'thumbnail' => true
+                        'resize'    => true,
+                        'thumbnail' => true,
                     ]);
-
-                    foreach ($uploadedImages as $index => $imageData) {
-                        $propertyModel->addImage($propertyId, $imageData, $index === 0);
+                    foreach ($uploadedImages as $imageData) {
+                        $propertyModel->addImage($propertyId, $imageData, false);
                     }
                 }
 
-                set_flash_message('success', 'Property added successfully! It will be reviewed by an admin before going live.');
+                set_flash_message('success', 'Listing updated.');
                 redirect('agent/properties.php');
-            } else {
-                $errors = $propertyModel->getErrors();
             }
+            $errors = array_merge($errors, $propertyModel->getErrors());
         }
     }
 }
 
-$pageTitle = 'Add Property';
+$pageTitle = 'Edit Property';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -397,7 +431,7 @@ $pageTitle = 'Add Property';
 </head>
 <body class="agent-portal">
 <?php
-$agentNavActive = 'add-property';
+$agentNavActive = 'properties';
 require __DIR__ . '/partials/sidebar.php';
 ?>
 
@@ -405,7 +439,7 @@ require __DIR__ . '/partials/sidebar.php';
 
     <div class="main-wrapper">
 <?php
-$agentPageHeading = 'Add New Property';
+$agentPageHeading = 'Edit listing';
 require __DIR__ . '/partials/topbar.php';
 ?>
 
@@ -454,16 +488,16 @@ require __DIR__ . '/partials/topbar.php';
                             <div class="form-group">
                                 <label for="price_type">Price Type</label>
                                 <select id="price_type" name="price_type">
-                                    <option value="fixed">Fixed</option>
-                                    <option value="negotiable">Negotiable</option>
+                                    <option value="fixed" <?php echo ($_POST['price_type'] ?? '') === 'fixed' ? 'selected' : ''; ?>>Fixed</option>
+                                    <option value="negotiable" <?php echo ($_POST['price_type'] ?? '') === 'negotiable' ? 'selected' : ''; ?>>Negotiable</option>
                                 </select>
                             </div>
                             
                             <div class="form-group">
                                 <label for="status_type">Status</label>
                                 <select id="status_type" name="status_type">
-                                    <option value="sale">For Sale</option>
-                                    <option value="rent">For Rent</option>
+                                    <option value="sale" <?php echo ($_POST['status_type'] ?? '') === 'sale' ? 'selected' : ''; ?>>For Sale</option>
+                                    <option value="rent" <?php echo ($_POST['status_type'] ?? '') === 'rent' ? 'selected' : ''; ?>>For Rent</option>
                                 </select>
                             </div>
                         </div>
@@ -603,7 +637,7 @@ require __DIR__ . '/partials/topbar.php';
                                 <div class="image-upload" onclick="document.getElementById('images').click()">
                                     <i class="fas fa-cloud-upload-alt"></i>
                                     <p>Click to upload images</p>
-                                    <small>First image will be the featured image. Max 5MB each.</small>
+                                    <small>New images are appended to your gallery (featured image unchanged). Max 5MB each.</small>
                                 </div>
                                 <input type="file" id="images" name="images[]" multiple accept="image/*" onchange="previewImages(this)">
                             </div>
@@ -625,7 +659,7 @@ require __DIR__ . '/partials/topbar.php';
                 <div style="display: flex; gap: 1rem; justify-content: flex-end;">
                     <a href="properties.php" class="btn btn-outline">Cancel</a>
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Save Property
+                        <i class="fas fa-save"></i> Save changes
                     </button>
                 </div>
             </form>

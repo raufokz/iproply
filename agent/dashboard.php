@@ -8,7 +8,6 @@ require_once '../includes/Database.php';
 require_once '../includes/Auth.php';
 require_once '../includes/Property.php';
 require_once '../includes/Inquiry.php';
-
 // Check authentication
 $auth = new Auth();
 $auth->requireAgent();
@@ -456,74 +455,20 @@ $pageTitle = 'Agent Dashboard';
     <link rel="stylesheet" href="../assets/css/agent.css">
 </head>
 <body class="agent-portal">
-    <!-- Sidebar -->
-    <aside class="sidebar" id="agentSidebar">
-        <div class="sidebar-header">
-            <a href="<?php echo base_url(); ?>"><?php echo APP_NAME; ?></a>
-        </div>
-        
-        <nav class="sidebar-nav">
-            <a href="dashboard.php" class="active">
-                <i class="fas fa-home"></i>
-                Dashboard
-            </a>
-            <a href="properties.php">
-                <i class="fas fa-building"></i>
-                My Properties
-            </a>
-            <a href="add-property.php">
-                <i class="fas fa-plus-circle"></i>
-                Add Property
-            </a>
-            <a href="inquiries.php">
-                <i class="fas fa-envelope"></i>
-                Inquiries
-                <?php if ($stats['new_inquiries'] > 0): ?>
-                    <span class="badge badge-error" style="margin-left: auto;"><?php echo $stats['new_inquiries']; ?></span>
-                <?php endif; ?>
-            </a>
-            <a href="profile.php">
-                <i class="fas fa-user"></i>
-                Profile
-            </a>
-        </nav>
-        
-        <div class="sidebar-footer">
-            <a href="<?php echo base_url(); ?>">
-                <i class="fas fa-arrow-left"></i>
-                Back to Website
-            </a>
-            <a href="logout.php">
-                <i class="fas fa-sign-out-alt"></i>
-                Logout
-            </a>
-        </div>
-    </aside>
+<?php
+$agentNavActive = 'dashboard';
+$agentInquiryBadgeCount = (int)($stats['new_inquiries'] ?? 0);
+require __DIR__ . '/partials/sidebar.php';
+?>
 
     <div class="sidebar-overlay" data-sidebar-overlay></div>
-    
-    <!-- Main Content -->
+
     <div class="main-wrapper">
-        <!-- Topbar -->
-        <header class="topbar">
-            <div class="topbar-title">
-                <button class="sidebar-toggle" type="button" data-sidebar-toggle aria-controls="agentSidebar" aria-expanded="false" aria-label="Open menu">
-                    <i class="fas fa-bars" aria-hidden="true"></i>
-                </button>
-                <h1>Dashboard</h1>
-            </div>
-            <div class="topbar-user">
-                <div class="user-info">
-                    <div class="name"><?php echo sanitize($_SESSION['user_name']); ?></div>
-                    <div class="role">Real Estate Agent</div>
-                </div>
-                <div class="user-avatar">
-                    <?php echo strtoupper(substr($_SESSION['user_name'], 0, 1)); ?>
-                </div>
-            </div>
-        </header>
-        
-        <!-- Content -->
+<?php
+$agentPageHeading = 'Dashboard';
+require __DIR__ . '/partials/topbar.php';
+?>
+
         <main class="content">
             <?php $flashMessages = get_flash_messages(); ?>
             <?php if (!empty($flashMessages)): ?>

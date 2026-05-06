@@ -8,6 +8,7 @@ require_once '../config/config.php';
 require_once '../includes/Database.php';
 require_once '../includes/Auth.php';
 require_once '../includes/Page.php';
+require_once '../includes/footer-routes.php';
 
 $auth = new Auth();
 $auth->requireAdmin();
@@ -142,7 +143,7 @@ $pageTitle = 'Manage Pages';
                         <div class="actions">
                             <a class="btn btn-secondary" href="pages.php?status=<?php echo urlencode($status); ?>&search=<?php echo urlencode($search); ?>">Cancel</a>
                             <?php if (!empty($editingPage['slug'])): ?>
-                                <a class="btn btn-secondary" target="_blank" rel="noopener" href="<?php echo base_url('page.php?slug=' . urlencode($editingPage['slug'])); ?>">View</a>
+                                <a class="btn btn-secondary" target="_blank" rel="noopener" href="<?php echo sanitize(footer_resolve_url($editingPage['slug'])); ?>">View</a>
                                 <a class="btn btn-secondary" target="_blank" rel="noopener" href="<?php echo base_url('page.php?slug=' . urlencode($editingPage['slug']) . '&preview=1'); ?>">Preview</a>
                             <?php endif; ?>
                         </div>
@@ -282,7 +283,7 @@ $pageTitle = 'Manage Pages';
                                             <td><?php echo !empty($p['updated_at']) ? format_date($p['updated_at'], 'M d, Y') : '-'; ?></td>
                                             <td class="actions">
                                                 <a class="btn btn-primary" href="pages.php?edit=<?php echo (int) $p['id']; ?>&status=<?php echo urlencode($status); ?>&search=<?php echo urlencode($search); ?>">Edit</a>
-                                                <a class="btn btn-secondary" target="_blank" rel="noopener" href="<?php echo base_url('page.php?slug=' . urlencode($p['slug'])); ?>">View</a>
+                                                <a class="btn btn-secondary" target="_blank" rel="noopener" href="<?php echo sanitize(footer_resolve_url($p['slug'])); ?>">View</a>
                                                 <a class="btn btn-secondary" target="_blank" rel="noopener" href="<?php echo base_url('page.php?slug=' . urlencode($p['slug']) . '&preview=1'); ?>">Preview</a>
                                                 <form method="POST" onsubmit="return confirm('Delete this page?');">
                                                     <input type="hidden" name="<?php echo CSRF_TOKEN_NAME; ?>" value="<?php echo $csrfToken; ?>">

@@ -31,6 +31,37 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    flex-wrap: wrap;
+    row-gap: 0.35rem;
+}
+
+.agent-portal .topbar-workspace {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-secondary, #64748b);
+    padding: 0.35rem 0.65rem;
+    border-radius: 999px;
+    border: 1px solid var(--portal-border);
+    background: rgba(255, 255, 255, 0.85);
+}
+
+.agent-portal .topbar-workspace i {
+    opacity: 0.85;
+    color: var(--portal-accent, #c8a663);
+}
+
+.agent-portal .user-avatar.user-avatar--img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--portal-border);
+    display: block;
 }
 
 .agent-portal .sidebar {
