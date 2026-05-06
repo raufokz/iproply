@@ -368,3 +368,47 @@
 .reveal-d2 { transition-delay: .2s; }
 .reveal-d3 { transition-delay: .3s; }
 
+/* Responsive polish */
+.ref-hero-inner,
+.ref-trust-inner,
+.ref-trust-cards,
+.ref-metrics,
+.ref-feature-grid,
+.ref-pillars,
+.ref-split {
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .ref-hero {
+    padding: 108px 0 48px;
+  }
+
+  .ref-hero-actions .btn,
+  .ref-outline-on-light,
+  .ref-card-cta .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .ref-hero-card,
+  .ref-feature,
+  .ref-pillar,
+  .ref-split-card,
+  .ref-trust-card {
+    padding: 1.25rem;
+    border-radius: var(--radius-lg);
+  }
+
+  .ref-pillar {
+    grid-template-columns: 44px 1fr;
+    gap: 0.8rem;
+  }
+
+  .ref-pillar-ic {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+  }
+}
+

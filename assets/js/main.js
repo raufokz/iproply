@@ -47,8 +47,13 @@ function initMobileMenu() {
     const mobileToggle = document.getElementById('mobileToggle');
     const mobileMenu = document.getElementById('mobileMenu');
     const mobileClose = document.getElementById('mobileClose');
+    const managedOverlay = document.getElementById('mobileOverlay');
 
     if (!mobileToggle || !mobileMenu) return;
+
+    // The 2025 header partial owns the animated drawer, overlay, focus, and
+    // hidden state. Avoid registering a second overlay/listener set.
+    if (managedOverlay && mobileMenu.hasAttribute('hidden')) return;
 
     // Create overlay
     const overlay = document.createElement('div');

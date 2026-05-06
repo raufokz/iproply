@@ -263,3 +263,35 @@
 .reveal-ba-d2 {
   transition-delay: 0.16s;
 }
+
+/* Responsive polish */
+.ba-hero-inner,
+.ba-grid,
+.ba-steps,
+.ba-req-grid {
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .ba-hero {
+    padding: 108px 0 48px;
+  }
+
+  .ba-actions .btn,
+  .ba-outline-light {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .ba-side-card,
+  .ba-card,
+  .ba-step {
+    padding: 1.25rem;
+    border-radius: var(--radius-lg);
+  }
+
+  .ba-check li,
+  .ba-req-grid li {
+    align-items: flex-start;
+  }
+}

@@ -344,3 +344,50 @@
     color: var(--text-secondary);
     line-height: 1.55;
 }
+
+/* Responsive polish */
+.market-stat-grid,
+.market-tables-grid,
+.market-tools,
+.market-cms,
+.market-table-wrap {
+    min-width: 0;
+}
+
+.table-scroll {
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 640px) {
+    .market-hero {
+        padding: 108px 0 44px;
+    }
+
+    .market-disclaimer {
+        padding-top: 1.25rem;
+    }
+
+    .market-stats-section,
+    .market-cms-section,
+    .market-tables-section,
+    .market-spotlight-section,
+    .market-tools-section {
+        padding: 2rem 0;
+    }
+
+    .market-cms,
+    .market-stat-card,
+    .market-tool,
+    .market-disclaimer__box {
+        padding: 1.15rem;
+        border-radius: var(--radius-md);
+    }
+
+    .market-stat-card__value {
+        font-size: 1.55rem;
+    }
+
+    .market-table {
+        min-width: 520px;
+    }
+}

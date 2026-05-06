@@ -164,6 +164,25 @@ $pageTitle = 'Admin Login';
             color: white;
             text-decoration: none;
         }
+
+        @media (max-width: 480px) {
+            body {
+                align-items: flex-start;
+                padding: 1rem;
+            }
+
+            .login-card {
+                padding: 1.5rem;
+            }
+
+            .logo {
+                margin: 0.5rem 0 1.25rem;
+            }
+
+            .logo a {
+                font-size: 1.6rem;
+            }
+        }
     </style>
 </head>
 <body>

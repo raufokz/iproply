@@ -546,3 +546,125 @@ body { font-family:var(--font-heading); }
 }
 #btt.visible { opacity:1; visibility:visible; }
 #btt:hover { transform:translateY(-3px); }
+
+/* Responsive polish */
+.hero-container,
+.reviews-layout,
+.about-grid-enh,
+.cta-banner,
+.plans-grid,
+.testi-grid-3,
+.steps-wrap,
+.stats-band-grid,
+.about-mini-grid {
+    min-width: 0;
+}
+
+@media (max-width: 900px) {
+    .hero {
+        min-height: auto;
+        padding: 112px 0 56px;
+    }
+
+    .hero-content {
+        max-width: 680px;
+    }
+
+    .hero-actions .btn {
+        flex: 1 1 220px;
+    }
+
+    .reviews-summary {
+        position: relative;
+        top: auto;
+    }
+
+    .about-img-main {
+        height: min(58vw, 420px);
+        min-height: 260px;
+    }
+}
+
+@media (max-width: 640px) {
+    #geo-banner {
+        justify-content: flex-start;
+        padding-right: 3rem;
+        text-align: left;
+    }
+
+    .hero {
+        padding: 96px 0 44px;
+    }
+
+    .hero-title {
+        font-size: clamp(2rem, 11vw, 2.75rem);
+    }
+
+    .hero-subtitle {
+        font-size: 0.98rem;
+        margin-bottom: 1.75rem;
+    }
+
+    .hero-actions {
+        margin-bottom: 2rem;
+    }
+
+    .hero-actions .btn,
+    .btn-ghost-primary,
+    .btn-cta-w,
+    .btn-cta-g {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .hero-stats-row,
+    .stats-band-grid,
+    .about-mini-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hero-stats-row {
+        padding: 1.1rem;
+        gap: 1rem;
+    }
+
+    .sband-item {
+        border-right: 0;
+        border-top: 1px solid rgba(255,255,255,.1);
+        padding: 2rem 1rem;
+    }
+
+    .sband-item:first-child {
+        border-top: 0;
+    }
+
+    .flex-header,
+    .rcard-top,
+    .testi-author-row,
+    .cta-btns,
+    .billing-toggle-row {
+        align-items: stretch;
+    }
+
+    .rcard-top,
+    .testi-author-row,
+    .billing-toggle-row {
+        flex-wrap: wrap;
+    }
+
+    .testi-featured,
+    .reviews-summary,
+    .plan,
+    .cta-banner {
+        padding: 1.5rem;
+        border-radius: var(--radius-lg);
+    }
+
+    .cta-banner {
+        gap: 1.5rem;
+    }
+
+    .plan-price-n {
+        font-size: 2.35rem;
+    }
+}

@@ -400,3 +400,325 @@ body {
         padding: 1rem;
     }
 }
+
+/* Responsive hardening for all admin pages, including pages with inline CSS. */
+html,
+body {
+    max-width: 100%;
+    overflow-x: clip;
+}
+
+@supports not (overflow-x: clip) {
+    html,
+    body {
+        overflow-x: hidden;
+    }
+}
+
+img,
+video,
+svg,
+iframe {
+    max-width: 100%;
+}
+
+input,
+select,
+textarea,
+button {
+    max-width: 100%;
+    min-width: 0;
+}
+
+.main-wrapper,
+.topbar,
+.topbar-title,
+.topbar-user,
+.content,
+.card,
+.card-header,
+.card-body,
+.stats-grid,
+.grid-2,
+.form-grid,
+.form-row,
+.settings-grid,
+.info-grid,
+.search-form,
+.status-filters,
+.actions {
+    min-width: 0;
+}
+
+.content {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.card-body,
+.table-wrap {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table {
+    min-width: 640px;
+}
+
+.table th,
+.table td,
+.property-row > *,
+.agent-row > *,
+.inquiry-row > *,
+.detail-row > *,
+.info-row > * {
+    overflow-wrap: anywhere;
+}
+
+.btn,
+.action-btn,
+.pagination a,
+.pagination span {
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
+}
+
+.topbar {
+    gap: 1rem;
+}
+
+.topbar-title h1 {
+    overflow-wrap: anywhere;
+}
+
+.search-form,
+.status-filters {
+    align-items: stretch !important;
+}
+
+.search-form input,
+.search-form select,
+.search-form button,
+.status-badge {
+    min-width: 0 !important;
+}
+
+.pagination {
+    flex-wrap: wrap;
+}
+
+@media (max-width: 1024px) {
+    .sidebar {
+        position: sticky !important;
+        top: 0 !important;
+        left: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        width: 100% !important;
+        height: auto !important;
+        max-height: none !important;
+        transform: none !important;
+        overflow: visible !important;
+        z-index: 1000 !important;
+    }
+
+    .sidebar-header {
+        padding: 1rem !important;
+    }
+
+    .sidebar-nav {
+        display: flex !important;
+        gap: 0.25rem !important;
+        overflow-x: auto !important;
+        padding: 0.65rem !important;
+        scroll-snap-type: x proximity;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .sidebar-nav a {
+        flex: 0 0 auto !important;
+        border-radius: var(--radius-md) !important;
+        padding: 0.7rem 0.9rem !important;
+        scroll-snap-align: start;
+        white-space: nowrap;
+    }
+
+    .sidebar-footer {
+        position: static !important;
+        padding: 0.65rem !important;
+    }
+
+    .sidebar-footer a {
+        justify-content: center;
+    }
+
+    .main-wrapper {
+        margin-left: 0 !important;
+    }
+
+    .topbar {
+        position: sticky;
+        top: 0;
+        padding: 1rem 1.25rem;
+    }
+
+    .content {
+        padding: 1.25rem;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    .grid-2,
+    .settings-grid,
+    .profile-grid,
+    .detail-grid,
+    .info-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .search-form,
+    .filter-form {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 0.75rem !important;
+    }
+
+    .search-form button,
+    .filter-form button,
+    .filter-form .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 720px) {
+    .header-row {
+        display: none !important;
+    }
+
+    .property-row,
+    .agent-row,
+    .inquiry-row {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 0.6rem !important;
+        align-items: start !important;
+        padding: 1rem !important;
+    }
+
+    .property-row + .property-row,
+    .agent-row + .agent-row,
+    .inquiry-row + .inquiry-row {
+        border-top: 1px solid var(--border);
+    }
+
+    .actions {
+        justify-content: flex-start !important;
+    }
+
+    .form-grid,
+    .form-row {
+        grid-template-columns: 1fr !important;
+    }
+
+    .form-grid .span-2,
+    .form-group.full-width {
+        grid-column: 1 !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .sidebar-header a {
+        font-size: 1rem;
+    }
+
+    .sidebar-nav a {
+        font-size: 0.82rem;
+    }
+
+    .topbar {
+        flex-direction: row !important;
+        align-items: flex-start !important;
+        justify-content: space-between !important;
+        padding: 0.9rem 1rem;
+    }
+
+    .topbar-title h1 {
+        font-size: 1.2rem;
+        line-height: 1.25;
+    }
+
+    .topbar-user {
+        gap: 0.6rem;
+    }
+
+    .user-info {
+        display: none;
+    }
+
+    .content {
+        padding: 1rem;
+    }
+
+    .card-header,
+    .card-body {
+        padding: 1rem !important;
+    }
+
+    .card-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .card-header .btn,
+    .card-header a.btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .stats-grid,
+    .search-form,
+    .filter-form {
+        grid-template-columns: 1fr !important;
+    }
+
+    .status-filters {
+        display: flex;
+        overflow-x: auto;
+        padding-bottom: 0.25rem;
+    }
+
+    .status-badge {
+        flex: 0 0 auto;
+    }
+
+    .empty-state {
+        padding: 1.5rem 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .actions .btn,
+    .actions .action-btn,
+    .action-btn {
+        flex: 1 1 100%;
+        justify-content: center;
+    }
+
+    .pagination {
+        justify-content: flex-start !important;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        padding-bottom: 0.25rem;
+    }
+
+    .pagination a,
+    .pagination span {
+        flex: 0 0 auto;
+    }
+}

@@ -183,3 +183,41 @@
   gap: 0.75rem;
   margin-top: 1.25rem;
 }
+
+/* Responsive polish */
+.mc-layout,
+.mc-row,
+.mc-panel,
+.mc-disclaimer {
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .mc-hero {
+    padding: 108px 0 40px;
+  }
+
+  .mc-wrap {
+    padding: 2rem 0 3rem;
+  }
+
+  .mc-panel,
+  .mc-disclaimer {
+    padding: 1.15rem;
+    border-radius: var(--radius-lg);
+  }
+
+  .mc-results-total {
+    font-size: 1.75rem;
+  }
+
+  .mc-breakdown li {
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .mc-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

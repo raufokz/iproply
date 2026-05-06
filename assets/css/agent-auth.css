@@ -415,3 +415,59 @@
   white-space: nowrap;
   border: 0;
 }
+
+/* Responsive polish */
+.auth-shell,
+.auth-card,
+.form-row,
+.ws-card-body {
+  min-width: 0;
+}
+
+.auth-body {
+  overflow-x: clip;
+}
+
+@supports not (overflow-x: clip) {
+  .auth-body {
+    overflow-x: hidden;
+  }
+}
+
+@media (max-width: 520px) {
+  .auth-body {
+    align-items: flex-start;
+    padding: 1rem;
+  }
+
+  .auth-logo {
+    margin: 0.5rem 0 1rem;
+  }
+
+  .auth-logo a {
+    font-size: 1.45rem;
+  }
+
+  .auth-card {
+    padding: 1.25rem;
+  }
+
+  .remember-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .form-row,
+  .auth-shell--wide .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .ws-card-body {
+    grid-template-columns: auto 1fr;
+  }
+
+  .ws-card-icon {
+    display: none;
+  }
+}

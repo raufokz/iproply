@@ -11,6 +11,13 @@ $propertyTypes = $propertyModel->getPropertyTypes();
 
 // Avoid notices on pages that don't set these explicitly (e.g., CMS pages, error pages).
 $currentPage = $currentPage ?? '';
+$currentScript = basename((string) parse_url($_SERVER['SCRIPT_NAME'] ?? '', PHP_URL_PATH));
+$agentsNavActive = in_array($currentPage, ['agents', 'referrals', 'become-agent', 'reviews'], true)
+    || in_array($currentScript, ['agents.php', 'referral-network.php', 'become-agent.php', 'reviews.php'], true);
+$companyNavActive = in_array($currentPage, ['about'], true)
+    || in_array($currentScript, ['about.php', 'why-iproply.php', 'our-story.php', 'community-impact.php', 'inclusion.php', 'press.php', 'careers.php', 'partners.php'], true);
+$resourcesNavActive = in_array($currentPage, ['blog', 'mortgage-calculator'], true)
+    || in_array($currentScript, ['blog.php', 'blog-post.php', 'market-reports.php', 'mortgage-calculator.php', 'help-center.php', 'advertise.php'], true);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -151,31 +158,116 @@ $currentPage = $currentPage ?? '';
                     </ul>
                 </li>
 
-                <li class="nav-item" role="none">
+                <li class="nav-item has-dropdown" role="none">
                     <a href="<?php echo base_url('agents.php'); ?>"
-                       class="nav-link <?php echo $currentPage === 'agents' ? 'active' : ''; ?>"
+                       class="nav-link <?php echo $agentsNavActive ? 'active' : ''; ?>"
                        role="menuitem"
-                       <?php echo $currentPage === 'agents' ? 'aria-current="page"' : ''; ?>>
-                        Preferred Agents
+                       aria-haspopup="true"
+                       aria-expanded="false"
+                       <?php echo $agentsNavActive ? 'aria-current="page"' : ''; ?>>
+                        Agents
+                        <i class="fas fa-chevron-down" aria-hidden="true"></i>
                     </a>
+                    <ul class="dropdown-menu" role="menu" aria-label="Agents submenu">
+                        <li role="none">
+                            <a href="<?php echo base_url('agents.php'); ?>" role="menuitem">
+                                <i class="fas fa-user-tie fa-fw" aria-hidden="true"></i> Preferred Agents
+                            </a>
+                        </li>
+                        <li role="none">
+                            <a href="<?php echo base_url('become-agent.php'); ?>" role="menuitem">
+                                <i class="fas fa-id-badge fa-fw" aria-hidden="true"></i> Become an Agent
+                            </a>
+                        </li>
+                        <li role="none">
+                            <a href="<?php echo base_url('referral-network.php'); ?>" role="menuitem">
+                                <i class="fas fa-share-nodes fa-fw" aria-hidden="true"></i> Referral Network
+                            </a>
+                        </li>
+                        <li role="none">
+                            <a href="<?php echo base_url('reviews.php'); ?>" role="menuitem">
+                                <i class="fas fa-star fa-fw" aria-hidden="true"></i> Reviews
+                            </a>
+                        </li>
+                    </ul>
                 </li>
 
-                <li class="nav-item" role="none">
-                    <a href="<?php echo base_url('referral-network.php'); ?>"
-                       class="nav-link <?php echo $currentPage === 'referrals' ? 'active' : ''; ?>"
-                       role="menuitem"
-                       <?php echo $currentPage === 'referrals' ? 'aria-current="page"' : ''; ?>>
-                        Referral Network
-                    </a>
-                </li>
-
-                <li class="nav-item" role="none">
+                <li class="nav-item has-dropdown" role="none">
                     <a href="<?php echo base_url('about.php'); ?>"
-                       class="nav-link <?php echo $currentPage === 'about' ? 'active' : ''; ?>"
+                       class="nav-link <?php echo $companyNavActive ? 'active' : ''; ?>"
                        role="menuitem"
-                       <?php echo $currentPage === 'about' ? 'aria-current="page"' : ''; ?>>
-                        About
+                       aria-haspopup="true"
+                       aria-expanded="false"
+                       <?php echo $companyNavActive ? 'aria-current="page"' : ''; ?>>
+                        Company
+                        <i class="fas fa-chevron-down" aria-hidden="true"></i>
                     </a>
+                    <ul class="dropdown-menu" role="menu" aria-label="Company submenu">
+                        <li role="none">
+                            <a href="<?php echo base_url('about.php'); ?>" role="menuitem">
+                                <i class="fas fa-circle-info fa-fw" aria-hidden="true"></i> About iProply
+                            </a>
+                        </li>
+                        <li role="none">
+                            <a href="<?php echo base_url('why-iproply.php'); ?>" role="menuitem">
+                                <i class="fas fa-gem fa-fw" aria-hidden="true"></i> Why iProply
+                            </a>
+                        </li>
+                        <li role="none">
+                            <a href="<?php echo base_url('our-story.php'); ?>" role="menuitem">
+                                <i class="fas fa-book-open fa-fw" aria-hidden="true"></i> Our Story
+                            </a>
+                        </li>
+                        <li role="none">
+                            <a href="<?php echo base_url('community-impact.php'); ?>" role="menuitem">
+                                <i class="fas fa-handshake-angle fa-fw" aria-hidden="true"></i> Community Impact
+                            </a>
+                        </li>
+                        <li role="none">
+                            <a href="<?php echo base_url('inclusion.php'); ?>" role="menuitem">
+                                <i class="fas fa-people-group fa-fw" aria-hidden="true"></i> Inclusion
+                            </a>
+                        </li>
+                        <li role="none">
+                            <a href="<?php echo base_url('press.php'); ?>" role="menuitem">
+                                <i class="fas fa-newspaper fa-fw" aria-hidden="true"></i> Press
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="nav-item has-dropdown" role="none">
+                    <a href="<?php echo base_url('blog.php'); ?>"
+                       class="nav-link <?php echo $resourcesNavActive ? 'active' : ''; ?>"
+                       role="menuitem"
+                       aria-haspopup="true"
+                       aria-expanded="false"
+                       <?php echo $resourcesNavActive ? 'aria-current="page"' : ''; ?>>
+                        Resources
+                        <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu--right" role="menu" aria-label="Resources submenu">
+                        <li role="none">
+                            <a href="<?php echo base_url('blog.php'); ?>" role="menuitem">
+                                <i class="fas fa-blog fa-fw" aria-hidden="true"></i> Blog
+                            </a>
+                        </li>
+                        <li role="none">
+                            <a href="<?php echo base_url('market-reports.php'); ?>" role="menuitem">
+                                <i class="fas fa-chart-line fa-fw" aria-hidden="true"></i> Market Reports
+                            </a>
+                        </li>
+                        <li role="none">
+                            <a href="<?php echo base_url('mortgage-calculator.php'); ?>" role="menuitem">
+                                <i class="fas fa-calculator fa-fw" aria-hidden="true"></i> Mortgage Calculator
+                            </a>
+                        </li>
+                        <li role="none">
+                            <a href="<?php echo base_url('help-center.php'); ?>" role="menuitem">
+                                <i class="fas fa-circle-question fa-fw" aria-hidden="true"></i> Help Center
+                            </a>
+                        </li>
+                    </ul>
                 </li>
 
                 <li class="nav-item" role="none">
@@ -184,15 +276,6 @@ $currentPage = $currentPage ?? '';
                        role="menuitem"
                        <?php echo $currentPage === 'contact' ? 'aria-current="page"' : ''; ?>>
                         Contact
-                    </a>
-                </li>
-
-                <li class="nav-item" role="none">
-                    <a href="<?php echo base_url('blog.php'); ?>"
-                       class="nav-link <?php echo $currentPage === 'blog' ? 'active' : ''; ?>"
-                       role="menuitem"
-                       <?php echo $currentPage === 'blog' ? 'aria-current="page"' : ''; ?>>
-                        Blog
                     </a>
                 </li>
 
@@ -269,15 +352,87 @@ $currentPage = $currentPage ?? '';
         </button>
     </div>
 
+    <form class="mobile-menu-search" action="<?php echo base_url('listings.php'); ?>" method="GET">
+        <label for="mobile-menu-keyword" class="sr-only">Search properties</label>
+        <input
+            type="text"
+            id="mobile-menu-keyword"
+            name="keyword"
+            placeholder="Search city, ZIP, or keyword"
+            value="<?php echo sanitize($_GET['keyword'] ?? ''); ?>"
+        >
+        <button type="submit" aria-label="Search listings">
+            <i class="fas fa-search" aria-hidden="true"></i>
+        </button>
+    </form>
+
     <!-- Nav links -->
     <ul class="mobile-nav-list" role="list">
         <li><a href="<?php echo base_url(); ?>"               <?php echo $currentPage==='home'     ? 'aria-current="page"' : ''; ?>>Home</a></li>
-        <li><a href="<?php echo base_url('listings.php'); ?>" <?php echo $currentPage==='listings' ? 'aria-current="page"' : ''; ?>>Listings</a></li>
-        <li><a href="<?php echo base_url('agents.php'); ?>"   <?php echo $currentPage==='agents'   ? 'aria-current="page"' : ''; ?>>Agents</a></li>
-        <li><a href="<?php echo base_url('referral-network.php'); ?>" <?php echo $currentPage==='referrals' ? 'aria-current="page"' : ''; ?>>Referral Network</a></li>
-        <li><a href="<?php echo base_url('about.php'); ?>"    <?php echo $currentPage==='about'    ? 'aria-current="page"' : ''; ?>>About</a></li>
-        <li><a href="<?php echo base_url('contact.php'); ?>"  <?php echo $currentPage==='contact'  ? 'aria-current="page"' : ''; ?>>Contact</a></li>
-        <li><a href="<?php echo base_url('blog.php'); ?>"     <?php echo $currentPage==='blog'     ? 'aria-current="page"' : ''; ?>>Blog</a></li>
+        <li class="mobile-nav-group">
+            <details class="mobile-nav-details" <?php echo $currentPage === 'listings' ? 'open' : ''; ?>>
+                <summary <?php echo $currentPage === 'listings' ? 'aria-current="page"' : ''; ?>>
+                    <span>Listings</span>
+                    <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                </summary>
+                <div class="mobile-subnav">
+                    <a href="<?php echo base_url('listings.php'); ?>">All Properties</a>
+                    <a href="<?php echo base_url('listings.php?status=sale'); ?>">For Sale</a>
+                    <a href="<?php echo base_url('listings.php?status=rent'); ?>">For Rent</a>
+                    <?php foreach ($propertyTypes as $type): ?>
+                        <a href="<?php echo base_url('listings.php?type=' . $type['id']); ?>">
+                            <?php echo sanitize($type['name']); ?>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+            </details>
+        </li>
+        <li class="mobile-nav-group">
+            <details class="mobile-nav-details" <?php echo $agentsNavActive ? 'open' : ''; ?>>
+                <summary <?php echo $agentsNavActive ? 'aria-current="page"' : ''; ?>>
+                    <span>Agents</span>
+                    <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                </summary>
+                <div class="mobile-subnav">
+                    <a href="<?php echo base_url('agents.php'); ?>">Preferred Agents</a>
+                    <a href="<?php echo base_url('become-agent.php'); ?>">Become an Agent</a>
+                    <a href="<?php echo base_url('referral-network.php'); ?>">Referral Network</a>
+                    <a href="<?php echo base_url('reviews.php'); ?>">Reviews</a>
+                </div>
+            </details>
+        </li>
+        <li class="mobile-nav-group">
+            <details class="mobile-nav-details" <?php echo $companyNavActive ? 'open' : ''; ?>>
+                <summary <?php echo $companyNavActive ? 'aria-current="page"' : ''; ?>>
+                    <span>Company</span>
+                    <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                </summary>
+                <div class="mobile-subnav">
+                    <a href="<?php echo base_url('about.php'); ?>">About iProply</a>
+                    <a href="<?php echo base_url('why-iproply.php'); ?>">Why iProply</a>
+                    <a href="<?php echo base_url('our-story.php'); ?>">Our Story</a>
+                    <a href="<?php echo base_url('community-impact.php'); ?>">Community Impact</a>
+                    <a href="<?php echo base_url('inclusion.php'); ?>">Inclusion</a>
+                    <a href="<?php echo base_url('press.php'); ?>">Press</a>
+                    <a href="<?php echo base_url('careers.php'); ?>">Careers</a>
+                </div>
+            </details>
+        </li>
+        <li class="mobile-nav-group">
+            <details class="mobile-nav-details" <?php echo $resourcesNavActive ? 'open' : ''; ?>>
+                <summary <?php echo $resourcesNavActive ? 'aria-current="page"' : ''; ?>>
+                    <span>Resources</span>
+                    <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                </summary>
+                <div class="mobile-subnav">
+                    <a href="<?php echo base_url('blog.php'); ?>">Blog</a>
+                    <a href="<?php echo base_url('market-reports.php'); ?>">Market Reports</a>
+                    <a href="<?php echo base_url('mortgage-calculator.php'); ?>">Mortgage Calculator</a>
+                    <a href="<?php echo base_url('help-center.php'); ?>">Help Center</a>
+                </div>
+            </details>
+        </li>
+        <li><a href="<?php echo base_url('contact.php'); ?>" <?php echo $currentPage==='contact' ? 'aria-current="page"' : ''; ?>>Contact</a></li>
     </ul>
 
     <!-- CTA buttons -->
@@ -332,6 +487,9 @@ $currentPage = $currentPage ?? '';
     var searchTrigger = document.getElementById('searchTrigger');
     var searchOverlay = document.getElementById('searchOverlay');
     var searchClose   = document.getElementById('searchClose');
+    var searchInput   = searchOverlay ? searchOverlay.querySelector('input') : null;
+    var menuLastFocusedElement = null;
+    var searchLastFocusedElement = null;
 
     var lastScrollY  = window.scrollY;
     var ticking      = false;
@@ -341,6 +499,11 @@ $currentPage = $currentPage ?? '';
     /* ── Scroll Handler: hide/show navbar + background change ── */
     function updateNavbar() {
         var currentScrollY = window.scrollY;
+        var isOverlayActive = menu.classList.contains('active') || searchOverlay.classList.contains('active');
+
+        if (isOverlayActive) {
+            navbar.classList.remove('hidden');
+        }
 
         // Background change
         if (currentScrollY > 50) {
@@ -352,7 +515,7 @@ $currentPage = $currentPage ?? '';
         }
 
         // Hide/show based on scroll direction (only after threshold)
-        if (currentScrollY > NAV_HIDE_THRESHOLD) {
+        if (!isOverlayActive && currentScrollY > NAV_HIDE_THRESHOLD) {
             if (currentScrollY > lastScrollY && !navbar.classList.contains('hidden')) {
                 // Scrolling down - hide navbar
                 navbar.classList.add('hidden');
@@ -379,22 +542,29 @@ $currentPage = $currentPage ?? '';
 
     /* ── Search Overlay ─────────────────────────────────────── */
     function openSearch() {
+        if (menu.classList.contains('active')) closeMenu(false);
+        searchLastFocusedElement = document.activeElement;
         searchOverlay.hidden = false;
         // Trigger reflow for animation
         void searchOverlay.offsetWidth;
         searchOverlay.classList.add('active');
+        navbar.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
         // Focus the input after animation
         setTimeout(function() {
-            searchOverlay.querySelector('input').focus();
+            if (searchInput) searchInput.focus();
         }, 100);
     }
 
-    function closeSearch() {
+    function closeSearch(restoreFocus) {
+        restoreFocus = restoreFocus !== false;
         searchOverlay.classList.remove('active');
         document.body.style.overflow = '';
         setTimeout(function() {
             searchOverlay.hidden = true;
+            if (restoreFocus && searchLastFocusedElement && typeof searchLastFocusedElement.focus === 'function') {
+                searchLastFocusedElement.focus();
+            }
         }, 400);
     }
 
@@ -423,6 +593,8 @@ $currentPage = $currentPage ?? '';
 
     /* ── Mobile menu: open ─────────────────────────────────── */
     function openMenu() {
+        if (searchOverlay.classList.contains('active')) closeSearch(false);
+        menuLastFocusedElement = document.activeElement;
         menu.hidden = false;
         // Trigger reflow
         void menu.offsetWidth;
@@ -432,12 +604,14 @@ $currentPage = $currentPage ?? '';
         toggle.classList.add('active');
         toggle.setAttribute('aria-expanded', 'true');
         toggle.setAttribute('aria-label', 'Close navigation menu');
+        navbar.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
         closeBtn.focus();
     }
 
     /* ── Mobile menu: close ────────────────────────────────── */
-    function closeMenu() {
+    function closeMenu(restoreFocus) {
+        restoreFocus = restoreFocus !== false;
         menu.classList.remove('active');
         overlay.classList.remove('active');
         overlay.setAttribute('aria-hidden', 'true');
@@ -449,6 +623,9 @@ $currentPage = $currentPage ?? '';
         menu.addEventListener('transitionend', function handler() {
             if (!menu.classList.contains('active')) menu.hidden = true;
             menu.removeEventListener('transitionend', handler);
+            if (restoreFocus && menuLastFocusedElement && typeof menuLastFocusedElement.focus === 'function') {
+                menuLastFocusedElement.focus();
+            }
         });
     }
 
@@ -465,6 +642,12 @@ $currentPage = $currentPage ?? '';
     /* Close panel when a nav link is tapped */
     menu.querySelectorAll('.mobile-nav-list a').forEach(function (a) {
         a.addEventListener('click', closeMenu);
+    });
+
+    window.addEventListener('resize', function () {
+        if (window.matchMedia('(min-width: 1180px)').matches && menu.classList.contains('active')) {
+            closeMenu(false);
+        }
     });
 
     /* ── Dropdown: aria-expanded ───────────────────────────── */

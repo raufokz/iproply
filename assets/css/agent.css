@@ -198,3 +198,264 @@
     }
 }
 
+/* Responsive hardening across agent portal pages with inline styles. */
+.agent-portal {
+    max-width: 100%;
+    overflow-x: clip;
+}
+
+@supports not (overflow-x: clip) {
+    .agent-portal {
+        overflow-x: hidden;
+    }
+}
+
+.agent-portal img,
+.agent-portal video,
+.agent-portal svg,
+.agent-portal iframe {
+    max-width: 100%;
+}
+
+.agent-portal input,
+.agent-portal select,
+.agent-portal textarea,
+.agent-portal button {
+    max-width: 100%;
+    min-width: 0;
+}
+
+.agent-portal .main-wrapper,
+.agent-portal .topbar,
+.agent-portal .topbar-title,
+.agent-portal .topbar-user,
+.agent-portal .content,
+.agent-portal .card,
+.agent-portal .card-header,
+.agent-portal .card-body,
+.agent-portal .stats-grid,
+.agent-portal .stats-bar,
+.agent-portal .grid-2,
+.agent-portal .form-grid,
+.agent-portal .form-row,
+.agent-portal .profile-hero,
+.agent-portal .tabs,
+.agent-portal .filter-tabs,
+.agent-portal .actions,
+.agent-portal .modal,
+.agent-portal .modal-body,
+.agent-portal .modal-footer {
+    min-width: 0;
+}
+
+.agent-portal p,
+.agent-portal li,
+.agent-portal td,
+.agent-portal th,
+.agent-portal a,
+.agent-portal h1,
+.agent-portal h2,
+.agent-portal h3,
+.agent-portal h4 {
+    overflow-wrap: anywhere;
+}
+
+.agent-portal .content {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.agent-portal .card-body {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.agent-portal .table {
+    min-width: 660px;
+}
+
+.agent-portal .btn,
+.agent-portal .btn-primary,
+.agent-portal .btn-outline,
+.agent-portal .btn-sm,
+.agent-portal .filter-tab,
+.agent-portal .pagination a,
+.agent-portal .pagination span {
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
+}
+
+.agent-portal .topbar {
+    gap: 1rem;
+}
+
+.agent-portal .stats-bar,
+.agent-portal .actions,
+.agent-portal .pagination,
+.agent-portal .modal-footer {
+    flex-wrap: wrap;
+}
+
+.agent-portal .filter-tabs,
+.agent-portal .tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.25rem;
+}
+
+.agent-portal .filter-tab,
+.agent-portal .tabs a,
+.agent-portal .tabs button {
+    flex: 0 0 auto;
+}
+
+.agent-portal .inquiry-preview {
+    max-width: min(300px, 100%);
+    white-space: normal;
+}
+
+.agent-portal .modal-overlay {
+    padding: 1rem;
+}
+
+.agent-portal .modal {
+    max-height: calc(100dvh - 2rem);
+    overflow: auto;
+}
+
+@media (max-width: 1024px) {
+    .agent-portal .sidebar {
+        width: min(86vw, 300px);
+        max-width: 100vw;
+    }
+
+    .agent-portal .content {
+        padding: 1.25rem !important;
+    }
+
+    .agent-portal .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    .agent-portal .grid-2,
+    .agent-portal .form-grid,
+    .agent-portal .form-row {
+        grid-template-columns: 1fr !important;
+    }
+
+    .agent-portal .form-grid .span-2,
+    .agent-portal .form-group.full-width {
+        grid-column: 1 !important;
+    }
+}
+
+@media (max-width: 720px) {
+    .agent-portal .topbar {
+        align-items: flex-start;
+        padding: 0.9rem 1rem !important;
+    }
+
+    .agent-portal .topbar-title {
+        align-items: flex-start;
+        flex: 1 1 auto;
+    }
+
+    .agent-portal .topbar-title h1,
+    .agent-portal .topbar h1 {
+        font-size: 1.2rem !important;
+        line-height: 1.25;
+    }
+
+    .agent-portal .topbar-workspace {
+        max-width: 100%;
+        white-space: normal;
+    }
+
+    .agent-portal .user-info {
+        display: none;
+    }
+
+    .agent-portal .card-header {
+        align-items: flex-start !important;
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 1rem !important;
+    }
+
+    .agent-portal .card-body {
+        padding: 1rem !important;
+    }
+
+    .agent-portal .card-header .btn,
+    .agent-portal .card-header a,
+    .agent-portal .modal-footer .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .agent-portal .stats-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+    }
+
+    .agent-portal .stats-bar {
+        flex-direction: column;
+    }
+
+    .agent-portal .stat-pill,
+    .agent-portal .stat-card {
+        width: 100%;
+    }
+
+    .agent-portal .profile-hero {
+        align-items: center;
+        text-align: center;
+    }
+
+    .agent-portal .image-upload {
+        padding: 1.5rem 1rem;
+    }
+}
+
+@media (max-width: 520px) {
+    .agent-portal .content {
+        padding: 1rem !important;
+    }
+
+    .agent-portal .topbar-user {
+        gap: 0.5rem;
+    }
+
+    .agent-portal .topbar-workspace {
+        display: none;
+    }
+
+    .agent-portal .btn,
+    .agent-portal .btn-primary,
+    .agent-portal .btn-outline,
+    .agent-portal .actions .btn,
+    .agent-portal .actions button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .agent-portal .modal-overlay {
+        align-items: stretch;
+        padding: 0;
+    }
+
+    .agent-portal .modal {
+        width: 100%;
+        max-width: none;
+        max-height: 100dvh;
+        border-radius: 0;
+    }
+
+    .agent-portal .modal-header,
+    .agent-portal .modal-body,
+    .agent-portal .modal-footer {
+        padding: 1rem;
+    }
+}
