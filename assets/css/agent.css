@@ -459,3 +459,28 @@
         padding: 1rem;
     }
 }
+
+/* Rectangular dropdown/select refresh */
+.agent-portal select:not([multiple]) {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    padding-right: 2.75rem !important;
+    background-color: #fff;
+    background-image:
+        linear-gradient(45deg, transparent 50%, currentColor 50%),
+        linear-gradient(135deg, currentColor 50%, transparent 50%);
+    background-position:
+        calc(100% - 18px) calc(50% - 2px),
+        calc(100% - 12px) calc(50% - 2px);
+    background-size: 6px 6px, 6px 6px;
+    background-repeat: no-repeat;
+    color: var(--text-primary, #1e3b5a);
+    border-radius: 8px;
+}
+
+.agent-portal select:not([multiple]):focus {
+    border-color: var(--portal-accent, #c8a663);
+    box-shadow: 0 0 0 3px var(--portal-ring, rgba(200, 166, 99, 0.28));
+    outline: none;
+}

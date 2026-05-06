@@ -471,3 +471,28 @@
     display: none;
   }
 }
+
+/* Rectangular dropdown/select refresh */
+.auth-card select:not([multiple]) {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  padding-right: 2.75rem !important;
+  background-color: #fff;
+  background-image:
+    linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) calc(50% - 2px),
+    calc(100% - 12px) calc(50% - 2px);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  color: var(--auth-text);
+  border-radius: 8px;
+}
+
+.auth-card select:not([multiple]):focus {
+  border-color: var(--auth-accent-strong);
+  box-shadow: 0 0 0 3px var(--auth-accent);
+  outline: none;
+}

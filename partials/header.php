@@ -540,9 +540,95 @@ $resourcesNavActive = in_array($currentPage, ['blog', 'mortgage-calculator'], tr
 
     updateNavbar(); // Run immediately on load
 
+    /* Desktop dropdown menus */
+    var dropdownItems = Array.prototype.slice.call(document.querySelectorAll('.has-dropdown'));
+
+    function closeDropdown(item) {
+        var trigger = item ? item.querySelector('.nav-link') : null;
+        if (!item || !trigger) return;
+
+        item.classList.remove('is-open');
+        trigger.setAttribute('aria-expanded', 'false');
+    }
+
+    function closeAllDropdowns(exceptItem) {
+        dropdownItems.forEach(function (item) {
+            if (item !== exceptItem) closeDropdown(item);
+        });
+    }
+
+    function openDropdown(item, focusFirstItem) {
+        var trigger = item ? item.querySelector('.nav-link') : null;
+        var menuEl = item ? item.querySelector('.dropdown-menu') : null;
+        if (!item || !trigger || !menuEl) return;
+
+        closeAllDropdowns(item);
+        item.classList.add('is-open');
+        trigger.setAttribute('aria-expanded', 'true');
+
+        if (focusFirstItem) {
+            var firstLink = menuEl.querySelector('a');
+            if (firstLink) firstLink.focus();
+        }
+    }
+
+    function closestElement(target, selector) {
+        if (!target) return null;
+        if (typeof target.closest === 'function') return target.closest(selector);
+        if (target.parentElement && typeof target.parentElement.closest === 'function') {
+            return target.parentElement.closest(selector);
+        }
+
+        return null;
+    }
+
+    dropdownItems.forEach(function (item) {
+        var trigger = item.querySelector('.nav-link');
+        var menuEl = item.querySelector('.dropdown-menu');
+        if (!trigger || !menuEl) return;
+
+        trigger.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            if (item.classList.contains('is-open')) {
+                closeDropdown(item);
+            } else {
+                openDropdown(item, false);
+            }
+        });
+
+        trigger.addEventListener('keydown', function (e) {
+            if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                openDropdown(item, true);
+            }
+
+            if (e.key === 'Escape') {
+                closeDropdown(item);
+                trigger.focus();
+            }
+        });
+
+        menuEl.addEventListener('click', function (e) {
+            if (closestElement(e.target, 'a')) closeDropdown(item);
+        });
+
+        item.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                closeDropdown(item);
+                trigger.focus();
+            }
+        });
+    });
+
+    document.addEventListener('click', function (e) {
+        if (!closestElement(e.target, '.has-dropdown')) closeAllDropdowns();
+    });
+
     /* ── Search Overlay ─────────────────────────────────────── */
     function openSearch() {
         if (menu.classList.contains('active')) closeMenu(false);
+        closeAllDropdowns();
         searchLastFocusedElement = document.activeElement;
         searchOverlay.hidden = false;
         // Trigger reflow for animation
@@ -581,6 +667,9 @@ $resourcesNavActive = in_array($currentPage, ['blog', 'mortgage-calculator'], tr
     }
 
     document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeAllDropdowns();
+        }
         if (e.key === 'Escape' && searchOverlay.classList.contains('active')) {
             closeSearch();
         }
@@ -594,6 +683,7 @@ $resourcesNavActive = in_array($currentPage, ['blog', 'mortgage-calculator'], tr
     /* ── Mobile menu: open ─────────────────────────────────── */
     function openMenu() {
         if (searchOverlay.classList.contains('active')) closeSearch(false);
+        closeAllDropdowns();
         menuLastFocusedElement = document.activeElement;
         menu.hidden = false;
         // Trigger reflow
@@ -645,26 +735,10 @@ $resourcesNavActive = in_array($currentPage, ['blog', 'mortgage-calculator'], tr
     });
 
     window.addEventListener('resize', function () {
+        closeAllDropdowns();
         if (window.matchMedia('(min-width: 1180px)').matches && menu.classList.contains('active')) {
             closeMenu(false);
         }
-    });
-
-    /* ── Dropdown: aria-expanded ───────────────────────────── */
-    document.querySelectorAll('.has-dropdown').forEach(function (item) {
-        var trigger = item.querySelector('.nav-link');
-        item.addEventListener('mouseenter', function () { 
-            trigger.setAttribute('aria-expanded', 'true'); 
-        });
-        item.addEventListener('mouseleave', function () { 
-            trigger.setAttribute('aria-expanded', 'false'); 
-        });
-        item.addEventListener('focusin', function () { 
-            trigger.setAttribute('aria-expanded', 'true'); 
-        });
-        item.addEventListener('focusout', function (e) {
-            if (!item.contains(e.relatedTarget)) trigger.setAttribute('aria-expanded', 'false');
-        });
     });
 
     /* ── Flash messages ────────────────────────────────────── */
