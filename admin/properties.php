@@ -7,6 +7,7 @@ require_once '../config/config.php';
 require_once '../includes/Database.php';
 require_once '../includes/Auth.php';
 require_once '../includes/Property.php';
+require_once '../includes/Upload.php';
 
 // Check authentication
 $auth = new Auth();
@@ -33,7 +34,7 @@ $perPage = ADMIN_ITEMS_PER_PAGE;
 // FIX #3: set_flash_message() argument order corrected
 //         to match config.php signature: ($type, $message)
 // -------------------------------------------------------
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_POST['action']) || isset($_POST['delete_image_id']) || isset($_POST['set_primary_image_id']))) {
 
     // Verify CSRF token
     if (!isset($_POST[CSRF_TOKEN_NAME]) || !verify_csrf_token($_POST[CSRF_TOKEN_NAME])) {
@@ -41,11 +42,132 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         redirect('admin/properties.php?status=' . $status);
     }
 
-    $action     = trim((string) $_POST['action']);
+    $action     = trim((string) ($_POST['action'] ?? ''));
+    if ($action === '' && isset($_POST['delete_image_id'])) {
+        $action = 'delete_image';
+    } elseif ($action === '' && isset($_POST['set_primary_image_id'])) {
+        $action = 'set_primary_image';
+    }
     $propertyId = isset($_POST['property_id']) ? (int)$_POST['property_id'] : 0;
+    $returnTo = 'admin/properties.php?status=' . urlencode($status) . '&search=' . urlencode($search) . '&page=' . $page;
+    if (!empty($_POST['return_to'])) {
+        $candidateReturn = trim((string) $_POST['return_to']);
+        if (preg_match('/^admin\/edit-property\.php\?id=\d+$/', $candidateReturn) || preg_match('/^admin\/properties\.php(\?.*)?$/', $candidateReturn)) {
+            $returnTo = $candidateReturn;
+        }
+    }
 
     if ($propertyId > 0) {
         switch ($action) {
+            case 'save_property':
+                $required = ['title', 'description', 'price', 'address', 'city', 'state'];
+                $errors = [];
+                foreach ($required as $field) {
+                    if (trim((string) ($_POST[$field] ?? '')) === '') {
+                        $errors[] = ucfirst(str_replace('_', ' ', $field)) . ' is required';
+                    }
+                }
+
+                if (!empty($errors)) {
+                    set_flash_message('error', implode(' ', $errors));
+                    redirect($returnTo);
+                }
+
+                $workflowStatus = Property::normalizeWorkflowStatus($_POST['property_status'] ?? Property::STATUS_PENDING);
+                $propertyData = [
+                    'title' => trim($_POST['title']),
+                    'description' => trim($_POST['description']),
+                    'short_description' => trim($_POST['short_description'] ?? ''),
+                    'price' => (float) ($_POST['price'] ?? 0),
+                    'price_type' => $_POST['price_type'] ?? 'fixed',
+                    'status' => $_POST['status_type'] ?? 'sale',
+                    'property_status' => $workflowStatus,
+                    'is_featured' => isset($_POST['is_featured']) ? 1 : 0,
+                    'bedrooms' => (int) ($_POST['bedrooms'] ?? 0),
+                    'bathrooms' => (float) ($_POST['bathrooms'] ?? 0),
+                    'area_sqft' => (float) ($_POST['area_sqft'] ?? 0),
+                    'lot_size' => (float) ($_POST['lot_size'] ?? 0),
+                    'year_built' => trim((string) ($_POST['year_built'] ?? '')) !== '' ? (int) $_POST['year_built'] : null,
+                    'parking_spaces' => (int) ($_POST['parking_spaces'] ?? 0),
+                    'floors' => (int) ($_POST['floors'] ?? 1),
+                    'address' => trim($_POST['address']),
+                    'city' => trim($_POST['city']),
+                    'state' => trim($_POST['state']),
+                    'zip_code' => trim($_POST['zip_code'] ?? ''),
+                    'property_type_id' => !empty($_POST['property_type_id']) ? (int) $_POST['property_type_id'] : null,
+                    'category_id' => !empty($_POST['category_id']) ? (int) $_POST['category_id'] : null,
+                    'features' => !empty($_POST['features']) ? json_encode(array_map('trim', explode(',', $_POST['features']))) : null,
+                    'amenities' => !empty($_POST['amenities']) ? json_encode(array_map('trim', explode(',', $_POST['amenities']))) : null,
+                    'virtual_tour_url' => trim($_POST['virtual_tour_url'] ?? ''),
+                    'video_url' => trim($_POST['video_url'] ?? ''),
+                    'admin_notes' => trim($_POST['admin_notes'] ?? ''),
+                ];
+
+                if ($propertyModel->update($propertyId, $propertyData)) {
+                    $propertyModel->updateStatus($propertyId, $workflowStatus, current_user_id());
+
+                    if (!empty($_FILES['images']['name'][0])) {
+                        $upload = new Upload();
+                        $uploadedImages = $upload->uploadMultiple($_FILES['images'], 'properties', [
+                            'resize' => true,
+                            'thumbnail' => true,
+                        ]);
+
+                        foreach ($uploadedImages as $imageData) {
+                            $propertyModel->addImage($propertyId, $imageData, false);
+                        }
+
+                        if (!empty($upload->getErrors())) {
+                            set_flash_message('error', 'Property saved, but some images were skipped: ' . implode(' ', $upload->getErrors()));
+                        }
+
+                        if (!empty($upload->getWarnings())) {
+                            set_flash_message('warning', implode(' ', $upload->getWarnings()));
+                        }
+                    }
+
+                    set_flash_message('success', 'Property updated.');
+                } else {
+                    set_flash_message('error', implode(' ', $propertyModel->getErrors()) ?: 'Unable to update property.');
+                }
+                redirect($returnTo);
+
+            case 'delete_property':
+            case 'delete':
+                if ($propertyModel->delete($propertyId)) {
+                    set_flash_message('success', 'Property deleted and images cleaned up.');
+                    redirect('admin/properties.php');
+                }
+                set_flash_message('error', implode(' ', $propertyModel->getErrors()) ?: 'Unable to delete property.');
+                redirect($returnTo);
+
+            case 'delete_image':
+                $imageId = isset($_POST['delete_image_id']) ? (int) $_POST['delete_image_id'] : 0;
+                if ($imageId > 0 && $propertyModel->deleteImage($imageId, $propertyId)) {
+                    set_flash_message('success', 'Image deleted.');
+                } else {
+                    set_flash_message('error', implode(' ', $propertyModel->getErrors()) ?: 'Unable to delete image.');
+                }
+                redirect($returnTo);
+
+            case 'set_primary_image':
+                $imageId = isset($_POST['set_primary_image_id']) ? (int) $_POST['set_primary_image_id'] : 0;
+                if ($imageId > 0 && $propertyModel->setPrimaryImage($propertyId, $imageId)) {
+                    set_flash_message('success', 'Featured image updated.');
+                } else {
+                    set_flash_message('error', implode(' ', $propertyModel->getErrors()) ?: 'Unable to update featured image.');
+                }
+                redirect($returnTo);
+
+            case 'reorder_images':
+                $orders = is_array($_POST['image_order'] ?? null) ? $_POST['image_order'] : [];
+                if ($propertyModel->reorderImages($propertyId, $orders)) {
+                    set_flash_message('success', 'Image order saved.');
+                } else {
+                    set_flash_message('error', implode(' ', $propertyModel->getErrors()) ?: 'Unable to reorder images.');
+                }
+                redirect($returnTo);
+
             case 'approve':
                 // property_status = admin workflow column (active/inactive/pending…)
                 $propertyModel->updateStatus($propertyId, Property::STATUS_ACTIVE, current_user_id());
@@ -53,7 +175,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 break;
 
             case 'reject':
-            case 'delete':
                 if ($propertyModel->delete($propertyId)) {
                     set_flash_message('success', 'Property removed and images cleaned up.');
                 } else {

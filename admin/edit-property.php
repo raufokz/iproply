@@ -256,8 +256,10 @@ $csrfToken = generate_csrf_token();
                 </div>
             <?php endif; ?>
 
-            <form method="POST" enctype="multipart/form-data">
+            <form action="properties.php" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="<?php echo CSRF_TOKEN_NAME; ?>" value="<?php echo $csrfToken; ?>">
+                <input type="hidden" name="property_id" value="<?php echo (int) $propertyId; ?>">
+                <input type="hidden" name="return_to" value="admin/edit-property.php?id=<?php echo (int) $propertyId; ?>">
 
                 <div class="editor-grid">
                     <div>
@@ -381,7 +383,7 @@ $csrfToken = generate_csrf_token();
                                     <button type="submit" name="action" value="delete_property" class="btn btn-danger" formnovalidate onclick="return confirm('Permanently delete this property and all of its images?');">
                                         <i class="fas fa-trash"></i> Delete
                                     </button>
-                                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Property</button>
+                                    <button type="submit" name="action" value="save_property" class="btn btn-primary"><i class="fas fa-save"></i> Save Property</button>
                                 </div>
                             </div>
                         </div>
