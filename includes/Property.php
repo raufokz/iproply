@@ -662,7 +662,15 @@ class Property {
      */
     public function getStates() {
         $sql = "SELECT DISTINCT state FROM properties WHERE property_status = 'active' ORDER BY state ASC";
-        return $this->db->query($sql)->fetchAll(PDO::FETCH_COLUMN);
+        $rows = $this->db->query($sql)->fetchAll();
+
+        return array_values(array_filter(array_map(static function ($row) {
+            if (is_array($row)) {
+                return trim((string) ($row['state'] ?? ''));
+            }
+
+            return trim((string) $row);
+        }, $rows)));
     }
 
     /**
@@ -678,7 +686,15 @@ class Property {
         }
         
         $sql = "SELECT DISTINCT city FROM properties WHERE {$where} ORDER BY city ASC";
-        return $this->db->query($sql, $params)->fetchAll(PDO::FETCH_COLUMN);
+        $rows = $this->db->query($sql, $params)->fetchAll();
+
+        return array_values(array_filter(array_map(static function ($row) {
+            if (is_array($row)) {
+                return trim((string) ($row['city'] ?? ''));
+            }
+
+            return trim((string) $row);
+        }, $rows)));
     }
 
     /**

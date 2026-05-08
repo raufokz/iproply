@@ -37,6 +37,9 @@ $states        = $propertyModel->getStates();
 include 'partials/header.php';
 
 $selectedState = isset($_GET['state']) ? strtoupper(trim((string) $_GET['state'])) : '';
+$advancedFilterCount = 0;
+$advancedFilterCount += trim((string) ($_GET['bedrooms'] ?? '')) !== '' ? 1 : 0;
+$advancedFilterCount += trim((string) ($_GET['bathrooms'] ?? '')) !== '' ? 1 : 0;
 ?>
 
 <!-- Page Header -->
@@ -50,7 +53,7 @@ $selectedState = isset($_GET['state']) ? strtoupper(trim((string) $_GET['state']
 <!-- Filter Bar -->
 <section class="filter-bar">
     <div class="container">
-        <form action="listings.php" method="GET" class="filter-form">
+        <form action="listings.php" method="GET" class="filter-form filter-form--compact">
             <input type="hidden" name="lat" value="<?php echo sanitize($_GET['lat'] ?? ''); ?>">
             <input type="hidden" name="lng" value="<?php echo sanitize($_GET['lng'] ?? ''); ?>">
             <?php if (!empty($_GET['radius_mi']) && is_numeric($_GET['radius_mi'])): ?>
@@ -64,7 +67,7 @@ $selectedState = isset($_GET['state']) ? strtoupper(trim((string) $_GET['state']
                 <input type="hidden" name="agent" value="<?php echo sanitize($_GET['agent']); ?>">
             <?php endif; ?>
 
-            <div class="filter-group">
+            <div class="filter-group filter-group--keyword">
                 <label for="list-keyword">Keywords / address / ZIP</label>
                 <input type="text" name="keyword" id="list-keyword" placeholder="City, address, ZIP, or keyword" value="<?php echo sanitize($_GET['keyword'] ?? ($_GET['search'] ?? '')); ?>">
             </div>
@@ -96,31 +99,40 @@ $selectedState = isset($_GET['state']) ? strtoupper(trim((string) $_GET['state']
             <div class="filter-group">
                 <label for="list-status">Status</label>
                 <select name="status" id="list-status">
-                    <option value="">All</option>
+                    <option value="">Any status</option>
                     <option value="sale" <?php echo (($_GET['status'] ?? '') === 'sale') ? 'selected' : ''; ?>>For Sale</option>
                     <option value="rent" <?php echo (($_GET['status'] ?? '') === 'rent') ? 'selected' : ''; ?>>For Rent</option>
                 </select>
             </div>
 
-            <div class="filter-group">
-                <label for="list-minp">Min Price</label>
-                <input type="number" name="min_price" id="list-minp" placeholder="$0" min="0" step="1000" value="<?php echo sanitize($_GET['min_price'] ?? ''); ?>">
+            <div class="filter-group filter-group--price">
+                <label for="list-minp">Price Range</label>
+                <div class="filter-price-row">
+                    <input type="number" name="min_price" id="list-minp" placeholder="$0" min="0" step="1000" aria-label="Minimum price" value="<?php echo sanitize($_GET['min_price'] ?? ''); ?>">
+                    <input type="number" name="max_price" id="list-maxp" placeholder="No max" min="0" step="1000" aria-label="Maximum price" value="<?php echo sanitize($_GET['max_price'] ?? ''); ?>">
+                </div>
             </div>
 
-            <div class="filter-group">
-                <label for="list-maxp">Max Price</label>
-                <input type="number" name="max_price" id="list-maxp" placeholder="No max" min="0" step="1000" value="<?php echo sanitize($_GET['max_price'] ?? ''); ?>">
-            </div>
+            <details class="filter-more">
+                <summary class="filter-more-toggle">
+                    <i class="fas fa-sliders" aria-hidden="true"></i>
+                    <span>More</span>
+                    <?php if ($advancedFilterCount > 0): ?>
+                        <span class="filter-more-count" aria-label="<?php echo $advancedFilterCount; ?> advanced filters active"><?php echo $advancedFilterCount; ?></span>
+                    <?php endif; ?>
+                </summary>
+                <div class="filter-more-menu">
+                    <div class="filter-group">
+                        <label for="list-beds">Beds min</label>
+                        <input type="number" name="bedrooms" id="list-beds" placeholder="Any" min="0" step="1" value="<?php echo sanitize($_GET['bedrooms'] ?? ''); ?>">
+                    </div>
 
-            <div class="filter-group">
-                <label for="list-beds">Beds min</label>
-                <input type="number" name="bedrooms" id="list-beds" placeholder="Any" min="0" step="1" value="<?php echo sanitize($_GET['bedrooms'] ?? ''); ?>">
-            </div>
-
-            <div class="filter-group">
-                <label for="list-baths">Baths min</label>
-                <input type="number" name="bathrooms" id="list-baths" placeholder="Any" min="0" step="0.5" value="<?php echo sanitize($_GET['bathrooms'] ?? ''); ?>">
-            </div>
+                    <div class="filter-group">
+                        <label for="list-baths">Baths min</label>
+                        <input type="number" name="bathrooms" id="list-baths" placeholder="Any" min="0" step="0.5" value="<?php echo sanitize($_GET['bathrooms'] ?? ''); ?>">
+                    </div>
+                </div>
+            </details>
 
             <div class="filter-actions">
                 <button type="submit" class="btn btn-primary">
