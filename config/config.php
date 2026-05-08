@@ -162,6 +162,22 @@ function asset_url($path) {
     return base_url('assets/' . ltrim($path, '/'));
 }
 
+function property_image_url($imagePath) {
+    $imagePath = trim((string) $imagePath);
+    if ($imagePath === '') {
+        return asset_url('images/property-placeholder.svg');
+    }
+
+    $filename = basename($imagePath);
+    $filepath = UPLOAD_PATH . 'properties/' . $filename;
+
+    if (!is_file($filepath)) {
+        return asset_url('images/property-placeholder.svg');
+    }
+
+    return UPLOAD_URL . 'properties/' . rawurlencode($filename);
+}
+
 function redirect($path) {
     header('Location: ' . base_url($path));
     exit;

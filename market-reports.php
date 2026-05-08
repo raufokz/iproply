@@ -235,9 +235,9 @@ include __DIR__ . '/partials/header.php';
                         <a href="<?php echo base_url('property.php?slug=' . urlencode($property['slug'])); ?>" style="text-decoration: none; color: inherit;">
                             <div class="property-image">
                                 <?php if (!empty($property['primary_image'])): ?>
-                                    <img src="<?php echo UPLOAD_URL . 'properties/' . sanitize($property['primary_image']); ?>" alt="<?php echo sanitize($property['title']); ?>">
+                                    <img src="<?php echo property_image_url($property['primary_image']); ?>" alt="<?php echo sanitize($property['title']); ?>">
                                 <?php else: ?>
-                                    <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&amp;h=400&amp;fit=crop" alt="<?php echo sanitize($property['title']); ?>">
+                                    <img src="<?php echo property_image_url(''); ?>" alt="Property image coming soon">
                                 <?php endif; ?>
                                 <span class="property-badge badge-<?php echo sanitize($property['status']); ?>">
                                     For <?php echo ucfirst(sanitize($property['status'])); ?>

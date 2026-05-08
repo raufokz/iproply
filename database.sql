@@ -343,7 +343,7 @@ CREATE TABLE properties (
     price DECIMAL(15, 2) NOT NULL,
     price_type ENUM('fixed', 'negotiable', 'auction') DEFAULT 'fixed',
     status ENUM('sale', 'rent', 'sold', 'pending') DEFAULT 'sale',
-    property_status ENUM('active', 'inactive', 'pending', 'featured', 'sold', 'rented') DEFAULT 'pending',
+    property_status ENUM('active', 'inactive', 'draft', 'pending', 'sold', 'rented') DEFAULT 'draft',
     bedrooms INT DEFAULT 0,
     bathrooms DECIMAL(3, 1) DEFAULT 0,
     area_sqft DECIMAL(10, 2) DEFAULT 0,
@@ -386,6 +386,10 @@ CREATE TABLE properties (
     INDEX idx_city (city),
     INDEX idx_state (state),
     INDEX idx_property_status (property_status),
+    INDEX idx_public_listing (property_status, is_featured, created_at),
+    INDEX idx_agent_status (agent_id, property_status, created_at),
+    INDEX idx_type_status (property_type_id, property_status, price),
+    INDEX idx_category_status (category_id, property_status, price),
     INDEX idx_featured (is_featured),
     FULLTEXT INDEX idx_search (title, description, address, city)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -412,9 +416,11 @@ CREATE TABLE property_images (
     display_order INT DEFAULT 0,
     is_primary TINYINT(1) DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (property_id) REFERENCES properties(id) ON DELETE CASCADE,
     INDEX idx_property (property_id),
-    INDEX idx_order (display_order)
+    INDEX idx_order (display_order),
+    INDEX idx_property_primary_order (property_id, is_primary, display_order, id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================
@@ -574,8 +580,11 @@ BEGIN
     SELECT 
         COUNT(DISTINCT p.id) as total_properties,
         COUNT(DISTINCT CASE WHEN p.property_status = 'active' THEN p.id END) as active_properties,
+        COUNT(DISTINCT CASE WHEN p.property_status = 'inactive' THEN p.id END) as inactive_properties,
+        COUNT(DISTINCT CASE WHEN p.property_status = 'draft' THEN p.id END) as draft_properties,
         COUNT(DISTINCT CASE WHEN p.property_status = 'pending' THEN p.id END) as pending_properties,
         COUNT(DISTINCT CASE WHEN p.property_status = 'sold' THEN p.id END) as sold_properties,
+        COUNT(DISTINCT CASE WHEN p.property_status = 'rented' THEN p.id END) as rented_properties,
         COUNT(DISTINCT i.id) as total_inquiries,
         COUNT(DISTINCT CASE WHEN i.status = 'new' THEN i.id END) as new_inquiries,
         COUNT(DISTINCT CASE WHEN i.status = 'responded' THEN i.id END) as responded_inquiries
@@ -591,7 +600,11 @@ BEGIN
     SELECT 
         (SELECT COUNT(*) FROM properties) as total_properties,
         (SELECT COUNT(*) FROM properties WHERE property_status = 'active') as active_properties,
+        (SELECT COUNT(*) FROM properties WHERE property_status = 'inactive') as inactive_properties,
+        (SELECT COUNT(*) FROM properties WHERE property_status = 'draft') as draft_properties,
         (SELECT COUNT(*) FROM properties WHERE property_status = 'pending') as pending_properties,
+        (SELECT COUNT(*) FROM properties WHERE property_status = 'sold') as sold_properties,
+        (SELECT COUNT(*) FROM properties WHERE property_status = 'rented') as rented_properties,
         (SELECT COUNT(*) FROM agents) as total_agents,
         (SELECT COUNT(*) FROM agents WHERE status = 'active') as active_agents,
         (SELECT COUNT(*) FROM agents WHERE status = 'pending') as pending_agents,

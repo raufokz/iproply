@@ -6,6 +6,7 @@
 
 class Upload {
     private $errors = [];
+    private $warnings = [];
     private $uploadPath;
     private $allowedTypes;
     private $maxSize;
@@ -30,10 +31,7 @@ class Upload {
             }
         }
 
-        // Check GD extension for image processing
-        if (!extension_loaded('gd')) {
-            $this->errors[] = 'GD extension is not enabled. Please enable PHP GD for image processing.';
-        }
+        // GD is optional at upload time; images can still be stored without optimization.
     }
 
     /**
@@ -41,6 +39,7 @@ class Upload {
      */
     public function upload($file, $directory = 'temp', $options = []) {
         $this->errors = [];
+        $this->warnings = [];
 
         // Check if file exists
         if (!isset($file) || empty($file['name'])) {
@@ -67,6 +66,17 @@ class Upload {
             return false;
         }
 
+        $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        if (!in_array($extension, $this->getAllowedExtensions(), true)) {
+            $this->errors[] = "Invalid file extension. Allowed extensions: " . implode(', ', $this->getAllowedExtensions());
+            return false;
+        }
+
+        if (!getimagesize($file['tmp_name'])) {
+            $this->errors[] = "Uploaded file is not a valid image";
+            return false;
+        }
+
         // Generate unique filename
         $filename = $this->generateFilename($file['name']);
         $filepath = $this->uploadPath . $directory . '/' . $filename;
@@ -83,14 +93,15 @@ class Upload {
         // Resize image if needed
         if (isset($options['resize']) && $options['resize']) {
             if (!extension_loaded('gd')) {
-                $this->errors[] = 'Cannot resize image because GD extension is not enabled.';
-                return false;
-            }
-            $maxWidth = $options['max_width'] ?? IMAGE_MAX_WIDTH;
-            $maxHeight = $options['max_height'] ?? IMAGE_MAX_HEIGHT;
-            if (!$this->resizeImage($filepath, $maxWidth, $maxHeight)) {
-                $this->errors[] = 'Image resize failed.';
-                return false;
+                $this->addWarning('PHP GD is not enabled, so uploaded images were stored without resizing or compression.');
+            } else {
+                $maxWidth = $options['max_width'] ?? IMAGE_MAX_WIDTH;
+                $maxHeight = $options['max_height'] ?? IMAGE_MAX_HEIGHT;
+                if (!$this->resizeImage($filepath, $maxWidth, $maxHeight)) {
+                    $this->deleteFile($filepath);
+                    $this->errors[] = 'Image resize failed.';
+                    return false;
+                }
             }
         }
 
@@ -98,15 +109,16 @@ class Upload {
         $thumbnailPath = null;
         if (isset($options['thumbnail']) && $options['thumbnail']) {
             if (!extension_loaded('gd')) {
-                $this->errors[] = 'Cannot create thumbnail because GD extension is not enabled.';
-                return false;
-            }
-            $thumbWidth = $options['thumb_width'] ?? THUMBNAIL_WIDTH;
-            $thumbHeight = $options['thumb_height'] ?? THUMBNAIL_HEIGHT;
-            $thumbnailPath = $this->createThumbnail($filepath, $directory, $thumbWidth, $thumbHeight);
-            if (!$thumbnailPath) {
-                $this->errors[] = 'Thumbnail creation failed.';
-                return false;
+                $this->addWarning('PHP GD is not enabled, so thumbnails were not generated.');
+            } else {
+                $thumbWidth = $options['thumb_width'] ?? THUMBNAIL_WIDTH;
+                $thumbHeight = $options['thumb_height'] ?? THUMBNAIL_HEIGHT;
+                $thumbnailPath = $this->createThumbnail($filepath, $directory, $thumbWidth, $thumbHeight);
+                if (!$thumbnailPath) {
+                    $this->deleteFile($filepath);
+                    $this->errors[] = 'Thumbnail creation failed.';
+                    return false;
+                }
             }
         }
 
@@ -128,18 +140,31 @@ class Upload {
      */
     public function uploadMultiple($files, $directory = 'temp', $options = []) {
         $this->errors = [];
+        $this->warnings = [];
         $results = [];
+        $allErrors = [];
+        $allWarnings = [];
 
         // Reorganize files array
         $reorganized = $this->reorganizeFilesArray($files);
 
         foreach ($reorganized as $file) {
+            if ((int) $file['error'] === UPLOAD_ERR_NO_FILE) {
+                continue;
+            }
+
             $result = $this->upload($file, $directory, $options);
             if ($result) {
                 $results[] = $result;
+            } else {
+                $allErrors = array_merge($allErrors, $this->errors);
             }
+
+            $allWarnings = array_merge($allWarnings, $this->warnings);
         }
 
+        $this->errors = array_values(array_unique($allErrors));
+        $this->warnings = array_values(array_unique($allWarnings));
         return $results;
     }
 
@@ -276,13 +301,8 @@ class Upload {
         $sourceHeight = $info[1];
         $mimeType = $info['mime'];
 
-        // Check if resize is needed
-        if ($sourceWidth <= $maxWidth && $sourceHeight <= $maxHeight) {
-            return true;
-        }
-
         // Calculate new dimensions
-        $ratio = min($maxWidth / $sourceWidth, $maxHeight / $sourceHeight);
+        $ratio = min(1, $maxWidth / $sourceWidth, $maxHeight / $sourceHeight);
         $newWidth = (int)($sourceWidth * $ratio);
         $newHeight = (int)($sourceHeight * $ratio);
 
@@ -311,10 +331,12 @@ class Upload {
         // Create resized image
         $resizedImage = imagecreatetruecolor($newWidth, $newHeight);
 
-        // Preserve transparency for PNG
-        if ($mimeType === 'image/png') {
+        // Preserve transparency where supported.
+        if (in_array($mimeType, ['image/png', 'image/webp'], true)) {
             imagealphablending($resizedImage, false);
             imagesavealpha($resizedImage, true);
+        } else {
+            imageinterlace($resizedImage, true);
         }
 
         // Resize
@@ -328,16 +350,16 @@ class Upload {
         // Save resized image
         switch ($mimeType) {
             case 'image/jpeg':
-                imagejpeg($resizedImage, $filepath, 90);
+                imagejpeg($resizedImage, $filepath, 82);
                 break;
             case 'image/png':
-                imagepng($resizedImage, $filepath, 6);
+                imagepng($resizedImage, $filepath, 7);
                 break;
             case 'image/gif':
                 imagegif($resizedImage, $filepath);
                 break;
             case 'image/webp':
-                imagewebp($resizedImage, $filepath, 90);
+                imagewebp($resizedImage, $filepath, 82);
                 break;
         }
 
@@ -352,8 +374,19 @@ class Upload {
      * Delete file
      */
     public function deleteFile($filepath) {
-        if (file_exists($filepath)) {
-            return unlink($filepath);
+        $realUploadPath = realpath($this->uploadPath);
+        $realFilePath = realpath($filepath);
+
+        if ($realUploadPath === false || $realFilePath === false) {
+            return false;
+        }
+
+        if (strpos($realFilePath, $realUploadPath) !== 0) {
+            return false;
+        }
+
+        if (is_file($realFilePath)) {
+            return unlink($realFilePath);
         }
         return false;
     }
@@ -422,9 +455,13 @@ class Upload {
     private function getAllowedExtensions() {
         $extensions = [];
         foreach ($this->allowedTypes as $type) {
-            $extensions[] = str_replace('image/', '', $type);
+            $extension = str_replace('image/', '', $type);
+            if ($extension === 'jpeg') {
+                $extensions[] = 'jpg';
+            }
+            $extensions[] = $extension;
         }
-        return $extensions;
+        return array_values(array_unique($extensions));
     }
 
     /**
@@ -447,6 +484,19 @@ class Upload {
      */
     public function getErrors() {
         return $this->errors;
+    }
+
+    /**
+     * Get non-fatal upload warnings
+     */
+    public function getWarnings() {
+        return $this->warnings;
+    }
+
+    private function addWarning($message) {
+        if (!in_array($message, $this->warnings, true)) {
+            $this->warnings[] = $message;
+        }
     }
 
     /**
@@ -480,6 +530,17 @@ class Upload {
         $fileType = mime_content_type($file['tmp_name']);
         if (!in_array($fileType, $this->allowedTypes)) {
             $this->errors[] = "Invalid file type";
+            return false;
+        }
+
+        $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        if (!in_array($extension, $this->getAllowedExtensions(), true)) {
+            $this->errors[] = "Invalid file extension";
+            return false;
+        }
+
+        if (!getimagesize($file['tmp_name'])) {
+            $this->errors[] = "Uploaded file is not a valid image";
             return false;
         }
 

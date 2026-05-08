@@ -6,6 +6,7 @@
 require_once '../config/config.php';
 require_once '../includes/Database.php';
 require_once '../includes/Auth.php';
+require_once '../includes/Property.php';
 
 // Check authentication
 $auth = new Auth();
@@ -13,12 +14,17 @@ $auth->requireAdmin();
 
 // Initialize database
 $db = Database::getInstance();
+$propertyModel = new Property();
 
 // Get filter and search parameters
-$status = isset($_GET['status']) ? sanitize($_GET['status']) : 'all';
-$search = isset($_GET['search']) ? sanitize($_GET['search']) : '';
+$allowedStatusFilters = array_merge(['all', 'featured'], Property::ADMIN_STATUSES);
+$status = isset($_GET['status']) ? strtolower(trim((string) $_GET['status'])) : 'all';
+if (!in_array($status, $allowedStatusFilters, true)) {
+    $status = 'all';
+}
+$search = isset($_GET['search']) ? trim((string) $_GET['search']) : '';
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$perPage = 20;
+$perPage = ADMIN_ITEMS_PER_PAGE;
 
 // -------------------------------------------------------
 // FIX #1: Process POST actions BEFORE running SELECT queries
@@ -35,40 +41,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         redirect('admin/properties.php?status=' . $status);
     }
 
-    $action     = $_POST['action'];
+    $action     = trim((string) $_POST['action']);
     $propertyId = isset($_POST['property_id']) ? (int)$_POST['property_id'] : 0;
 
     if ($propertyId > 0) {
         switch ($action) {
             case 'approve':
                 // property_status = admin workflow column (active/inactive/pending…)
-                $db->update('properties', ['property_status' => 'active'], 'id = :id', ['id' => $propertyId]);
+                $propertyModel->updateStatus($propertyId, Property::STATUS_ACTIVE, current_user_id());
                 set_flash_message('success', 'Property approved successfully.');
                 break;
 
             case 'reject':
-                $db->delete('properties', 'id = :id', ['id' => $propertyId]);
-                set_flash_message('success', 'Property rejected and removed.');
+                if ($propertyModel->delete($propertyId)) {
+                    set_flash_message('success', 'Property removed and images cleaned up.');
+                } else {
+                    set_flash_message('error', implode(' ', $propertyModel->getErrors()) ?: 'Unable to remove property.');
+                }
                 break;
 
             case 'feature':
-                $db->update('properties', ['is_featured' => 1], 'id = :id', ['id' => $propertyId]);
+                $db->update('properties', ['is_featured' => 1, 'updated_at' => date('Y-m-d H:i:s')], 'id = :id', ['id' => $propertyId]);
                 set_flash_message('success', 'Property marked as featured.');
                 break;
 
             case 'unfeature':
-                $db->update('properties', ['is_featured' => 0], 'id = :id', ['id' => $propertyId]);
+                $db->update('properties', ['is_featured' => 0, 'updated_at' => date('Y-m-d H:i:s')], 'id = :id', ['id' => $propertyId]);
                 set_flash_message('success', 'Property removed from featured.');
                 break;
 
             case 'deactivate':
-                $db->update('properties', ['property_status' => 'inactive'], 'id = :id', ['id' => $propertyId]);
+                $propertyModel->updateStatus($propertyId, Property::STATUS_INACTIVE, current_user_id());
                 set_flash_message('success', 'Property deactivated successfully.');
                 break;
 
             case 'activate':
-                $db->update('properties', ['property_status' => 'active'], 'id = :id', ['id' => $propertyId]);
+                $propertyModel->updateStatus($propertyId, Property::STATUS_ACTIVE, current_user_id());
                 set_flash_message('success', 'Property activated successfully.');
+                break;
+
+            case 'draft':
+                $propertyModel->updateStatus($propertyId, Property::STATUS_DRAFT, current_user_id());
+                set_flash_message('success', 'Property moved to draft.');
+                break;
+
+            case 'pending':
+                $propertyModel->updateStatus($propertyId, Property::STATUS_PENDING, current_user_id());
+                set_flash_message('success', 'Property moved to pending review.');
+                break;
+
+            case 'sold':
+                $propertyModel->updateStatus($propertyId, Property::STATUS_SOLD, current_user_id());
+                set_flash_message('success', 'Property marked as sold.');
+                break;
+
+            case 'rented':
+                $propertyModel->updateStatus($propertyId, Property::STATUS_RENTED, current_user_id());
+                set_flash_message('success', 'Property marked as rented.');
                 break;
 
             default:
@@ -89,7 +118,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 $conditions = '';
 $params     = [];
 
-if ($status !== 'all') {
+if ($status === 'featured') {
+    $conditions .= 'p.is_featured = 1';
+} elseif ($status !== 'all') {
     // property_status is the admin workflow column (active/inactive/pending/sold…)
     // p.status is the listing type (sale/rent/sold) — NOT what we filter by here
     $conditions        .= 'p.property_status = :status';
@@ -99,10 +130,14 @@ if ($status !== 'all') {
 if (!empty($search)) {
     if (!empty($conditions)) $conditions .= ' AND ';
     $pat = "%{$search}%";
-    $conditions .= '(p.title LIKE :ap_s1 OR p.description LIKE :ap_s2 OR p.address LIKE :ap_s3)';
+    $conditions .= '(p.title LIKE :ap_s1 OR p.description LIKE :ap_s2 OR p.address LIKE :ap_s3 OR p.city LIKE :ap_s4 OR p.state LIKE :ap_s5 OR a.first_name LIKE :ap_s6 OR a.last_name LIKE :ap_s7)';
     $params['ap_s1'] = $pat;
     $params['ap_s2'] = $pat;
     $params['ap_s3'] = $pat;
+    $params['ap_s4'] = $pat;
+    $params['ap_s5'] = $pat;
+    $params['ap_s6'] = $pat;
+    $params['ap_s7'] = $pat;
 }
 
 // Get total count — must JOIN agents too so the same p.-prefixed conditions work
@@ -335,6 +370,7 @@ $pageTitle = 'Manage Properties';
                         <select name="status">
                             <option value="all"      <?php echo $status === 'all'      ? 'selected' : ''; ?>>All Statuses</option>
                             <option value="pending"  <?php echo $status === 'pending'  ? 'selected' : ''; ?>>Pending Approval</option>
+                            <option value="draft"    <?php echo $status === 'draft'    ? 'selected' : ''; ?>>Draft</option>
                             <option value="active"   <?php echo $status === 'active'   ? 'selected' : ''; ?>>Active</option>
                             <option value="inactive" <?php echo $status === 'inactive' ? 'selected' : ''; ?>>Inactive</option>
                             <option value="sold"     <?php echo $status === 'sold'     ? 'selected' : ''; ?>>Sold</option>
@@ -397,6 +433,7 @@ $pageTitle = 'Manage Properties';
                                         // property_status drives both the badge colour and which action buttons show
                                         $badgeClass = match($property['property_status']) {
                                             'pending'  => 'warning',
+                                            'draft'    => 'info',
                                             'active',
                                             'featured' => 'success',
                                             'inactive' => 'info',
@@ -421,6 +458,10 @@ $pageTitle = 'Manage Properties';
 
                                 <!-- Action buttons — each form carries the CSRF token -->
                                 <div class="actions" style="justify-content: flex-end;">
+
+                                    <a href="edit-property.php?id=<?php echo (int)$property['id']; ?>" class="action-btn btn-feature" style="text-decoration:none;">
+                                        <i class="fas fa-pen"></i> Edit
+                                    </a>
 
                                     <?php if ($property['property_status'] === 'pending'): ?>
 

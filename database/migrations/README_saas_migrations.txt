@@ -9,8 +9,10 @@ FORWARD ORDER (run once per environment after backup):
   006_tenant_settings.sql
   007_soft_delete_columns.sql          (optional; omit if you do not want soft-delete)
   008_trigger_property_views_tenant.sql  (requires mysql CLI or client that honors DELIMITER)
+  009_property_management_hardening.sql  (status workflow, gallery indexes, dashboard procedures)
 
 ROLLBACK ORDER (reverse; only before production traffic depends on tenants):
+  rollback_009_property_management_hardening.sql  (create manually if rollback is required)
   rollback_008_trigger_property_views_tenant.sql
   rollback_007_soft_delete_columns.sql          (if 007 applied)
   rollback_006_tenant_settings.sql

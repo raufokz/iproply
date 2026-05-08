@@ -30,6 +30,8 @@ if (!$existing || (int)$existing['agent_id'] !== (int)current_user_id()) {
     redirect('agent/properties.php');
 }
 
+$existingImages = $propertyModel->getImages($propertyId);
+
 $csvFromJsonField = static function (?string $raw): string {
     if ($raw === null || $raw === '') {
         return '';
@@ -73,6 +75,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
         $errors[] = 'Invalid request. Please try again.';
     } else {
+        if (isset($_POST['delete_image_id'])) {
+            $imageId = (int) $_POST['delete_image_id'];
+            if ($propertyModel->deleteImage($imageId, $propertyId)) {
+                set_flash_message('success', 'Image deleted.');
+            } else {
+                set_flash_message('error', implode(' ', $propertyModel->getErrors()) ?: 'Unable to delete image.');
+            }
+            redirect('agent/edit-property.php?id=' . $propertyId);
+        }
+
+        if (isset($_POST['set_primary_image_id'])) {
+            $imageId = (int) $_POST['set_primary_image_id'];
+            if ($propertyModel->setPrimaryImage($propertyId, $imageId)) {
+                set_flash_message('success', 'Featured image updated.');
+            } else {
+                set_flash_message('error', implode(' ', $propertyModel->getErrors()) ?: 'Unable to update featured image.');
+            }
+            redirect('agent/edit-property.php?id=' . $propertyId);
+        }
+
+        if (($_POST['action'] ?? '') === 'reorder_images') {
+            $orders = is_array($_POST['image_order'] ?? null) ? $_POST['image_order'] : [];
+            if ($propertyModel->reorderImages($propertyId, $orders)) {
+                set_flash_message('success', 'Image order saved.');
+            } else {
+                set_flash_message('error', implode(' ', $propertyModel->getErrors()) ?: 'Unable to reorder images.');
+            }
+            redirect('agent/edit-property.php?id=' . $propertyId);
+        }
+
         $required = ['title', 'description', 'price', 'address', 'city', 'state'];
         foreach ($required as $field) {
             if (empty($_POST[$field])) {
@@ -81,6 +113,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if (empty($errors)) {
+            $submitAction = $_POST['submit_action'] ?? 'save';
+            $workflowStatus = $existing['property_status'];
+            if ($submitAction === 'draft') {
+                $workflowStatus = Property::STATUS_DRAFT;
+            } elseif ($submitAction === 'submit' && in_array($existing['property_status'], [Property::STATUS_DRAFT, Property::STATUS_PENDING], true)) {
+                $workflowStatus = Property::STATUS_PENDING;
+            }
+
             $propertyData = [
                 'title'               => trim($_POST['title']),
                 'description'         => trim($_POST['description']),
@@ -88,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'price'               => floatval($_POST['price']),
                 'price_type'          => $_POST['price_type'] ?? 'fixed',
                 'status'              => $_POST['status_type'] ?? 'sale',
-                'property_status'     => $existing['property_status'],
+                'property_status'     => $workflowStatus,
                 'bedrooms'            => intval($_POST['bedrooms'] ?? 0),
                 'bathrooms'           => floatval($_POST['bathrooms'] ?? 0),
                 'area_sqft'           => floatval($_POST['area_sqft'] ?? 0),
@@ -116,6 +156,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ]);
                     foreach ($uploadedImages as $imageData) {
                         $propertyModel->addImage($propertyId, $imageData, false);
+                    }
+
+                    if (!empty($upload->getErrors())) {
+                        set_flash_message('error', 'Listing saved, but some images were skipped: ' . implode(' ', $upload->getErrors()));
+                    }
+
+                    if (!empty($upload->getWarnings())) {
+                        set_flash_message('warning', implode(' ', $upload->getWarnings()));
                     }
                 }
 
@@ -419,6 +467,42 @@ $pageTitle = 'Edit Property';
         .image-upload input {
             display: none;
         }
+
+        .image-manager {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .image-item {
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 0.75rem;
+            background: #fff;
+        }
+
+        .image-item img {
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            object-fit: cover;
+            border-radius: var(--radius-md);
+            margin-bottom: 0.75rem;
+        }
+
+        .image-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .image-order {
+            width: 72px;
+            padding: 0.45rem 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+        }
         
         @media (max-width: 1024px) {
             .sidebar { transform: translateX(-100%); transition: transform 0.3s; }
@@ -444,6 +528,15 @@ require __DIR__ . '/partials/topbar.php';
 ?>
 
         <main class="content">
+            <?php $flashMessages = get_flash_messages(); ?>
+            <?php if (!empty($flashMessages)): ?>
+                <?php foreach ($flashMessages as $message): ?>
+                    <div class="alert alert-<?php echo sanitize($message['type']); ?>">
+                        <?php echo sanitize($message['message']); ?>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+
             <?php if (!empty($errors)): ?>
                 <div class="alert alert-error">
                     <ul>
@@ -634,6 +727,35 @@ require __DIR__ . '/partials/topbar.php';
                         <div class="form-grid">
                             <div class="form-group full-width">
                                 <label>Property Images</label>
+                                <?php if (!empty($existingImages)): ?>
+                                    <div class="image-manager">
+                                        <?php foreach ($existingImages as $image): ?>
+                                            <div class="image-item">
+                                                <img src="<?php echo property_image_url($image['image_path']); ?>" alt="Property image">
+                                                <?php if (!empty($image['is_primary'])): ?>
+                                                    <span class="badge badge-success" style="margin-bottom:0.5rem;">Featured</span>
+                                                <?php endif; ?>
+                                                <div class="image-actions">
+                                                    <label>
+                                                        Order
+                                                        <input class="image-order" type="number" name="image_order[<?php echo (int)$image['id']; ?>]" min="0" value="<?php echo (int)$image['display_order']; ?>">
+                                                    </label>
+                                                    <?php if (empty($image['is_primary'])): ?>
+                                                        <button type="submit" name="set_primary_image_id" value="<?php echo (int)$image['id']; ?>" class="btn btn-outline" formnovalidate>
+                                                            <i class="fas fa-star"></i> Feature
+                                                        </button>
+                                                    <?php endif; ?>
+                                                    <button type="submit" name="delete_image_id" value="<?php echo (int)$image['id']; ?>" class="btn btn-outline" formnovalidate onclick="return confirm('Delete this image?');">
+                                                        <i class="fas fa-trash"></i> Delete
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                    <button type="submit" name="action" value="reorder_images" class="btn btn-outline" formnovalidate style="margin-bottom:1rem;">
+                                        <i class="fas fa-sort"></i> Save Image Order
+                                    </button>
+                                <?php endif; ?>
                                 <div class="image-upload" onclick="document.getElementById('images').click()">
                                     <i class="fas fa-cloud-upload-alt"></i>
                                     <p>Click to upload images</p>
@@ -658,9 +780,18 @@ require __DIR__ . '/partials/topbar.php';
                 <!-- Submit Buttons -->
                 <div style="display: flex; gap: 1rem; justify-content: flex-end;">
                     <a href="properties.php" class="btn btn-outline">Cancel</a>
+                    <?php if (in_array($existing['property_status'], [Property::STATUS_DRAFT, Property::STATUS_PENDING], true)): ?>
+                        <button type="submit" name="submit_action" value="draft" class="btn btn-outline">
+                            <i class="fas fa-file"></i> Save Draft
+                        </button>
+                        <button type="submit" name="submit_action" value="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Submit for Review
+                        </button>
+                    <?php else: ?>
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save"></i> Save changes
                     </button>
+                    <?php endif; ?>
                 </div>
             </form>
         </main>

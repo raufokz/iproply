@@ -22,7 +22,7 @@ if (empty($slug)) {
 }
 
 // Get property details
-$property = $propertyModel->getBySlug($slug);
+$property = $propertyModel->getBySlug($slug, true);
 
 if (!$property) {
     set_flash_message('error', 'Property not found');
@@ -89,17 +89,17 @@ include 'partials/header.php';
         <div class="property-gallery">
             <div class="gallery-main">
                 <?php if (!empty($images)): ?>
-                    <img id="mainImage" src="<?php echo UPLOAD_URL . 'properties/' . $images[0]['image_path']; ?>" alt="<?php echo sanitize($property['title']); ?>">
+                    <img id="mainImage" src="<?php echo property_image_url($images[0]['image_path']); ?>" alt="<?php echo sanitize($property['title']); ?>">
                 <?php else: ?>
-                    <img id="mainImage" src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&h=600&fit=crop" alt="Property">
+                    <img id="mainImage" src="<?php echo property_image_url(''); ?>" alt="Property image coming soon">
                 <?php endif; ?>
             </div>
             
             <?php if (count($images) > 1): ?>
                 <div class="gallery-thumbs">
                     <?php foreach ($images as $index => $image): ?>
-                        <img src="<?php echo UPLOAD_URL . 'properties/' . $image['image_path']; ?>" 
-                             data-full="<?php echo UPLOAD_URL . 'properties/' . $image['image_path']; ?>"
+                        <img src="<?php echo property_image_url($image['image_path']); ?>" 
+                             data-full="<?php echo property_image_url($image['image_path']); ?>"
                              alt="Property Image <?php echo $index + 1; ?>"
                              class="<?php echo $index === 0 ? 'active' : ''; ?>"
                              onclick="changeMainImage(this)">
@@ -332,9 +332,9 @@ include 'partials/header.php';
                             <a href="property.php?slug=<?php echo $similar['slug']; ?>" style="text-decoration: none; color: inherit;">
                                 <div class="property-image">
                                     <?php if ($similar['primary_image']): ?>
-                                        <img src="<?php echo UPLOAD_URL . 'properties/' . $similar['primary_image']; ?>" alt="<?php echo sanitize($similar['title']); ?>">
+                                        <img src="<?php echo property_image_url($similar['primary_image']); ?>" alt="<?php echo sanitize($similar['title']); ?>">
                                     <?php else: ?>
-                                        <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&h=400&fit=crop" alt="Property">
+                                        <img src="<?php echo property_image_url(''); ?>" alt="Property image coming soon">
                                     <?php endif; ?>
                                     
                                     <span class="property-badge badge-<?php echo $similar['status']; ?>">

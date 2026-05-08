@@ -553,7 +553,14 @@ require __DIR__ . '/partials/topbar.php';
                                             <td><?php echo sanitize(truncate($property['title'], 30)); ?></td>
                                             <td><?php echo format_price($property['price'], $property['status']); ?></td>
                                             <td>
-                                                <span class="badge badge-<?php echo $property['property_status'] === 'active' ? 'success' : 'warning'; ?>">
+                                                <?php
+                                                    $statusBadge = match($property['property_status']) {
+                                                        Property::STATUS_ACTIVE => 'success',
+                                                        Property::STATUS_PENDING => 'warning',
+                                                        default => 'info',
+                                                    };
+                                                ?>
+                                                <span class="badge badge-<?php echo $statusBadge; ?>">
                                                     <?php echo ucfirst($property['property_status']); ?>
                                                 </span>
                                             </td>

@@ -298,9 +298,8 @@ class Mail {
     /**
      * Inquiry email template for agent
      *
-     * FIX: format_price() now uses $property['property_status'] (the real-estate
-     *      status column: for-sale / for-rent) instead of $property['status']
-     *      (the admin workflow column: pending / active / inactive).
+     * format_price() uses $property['status'] (sale/rent), while
+     * property_status remains the admin workflow column.
      */
     private function getInquiryEmailTemplate($agent, $inquiry, $property) {
         $propertyUrl = base_url('property.php?slug=' . ($property['slug'] ?? ''));
@@ -313,7 +312,7 @@ class Mail {
             <h3>' . $this->nullsafe_sanitize($property['title'] ?? '') . '</h3>
             <p>
                 <span class="label">Price:</span>
-                <span class="value">' . format_price($property['price'] ?? 0, $property['property_status'] ?? 'sale') . '</span>
+                <span class="value">' . format_price($property['price'] ?? 0, $property['status'] ?? 'sale') . '</span>
             </p>
             <p>
                 <span class="label">Location:</span>
@@ -347,7 +346,7 @@ class Mail {
     /**
      * Confirmation email template for the enquiring user
      *
-     * FIX: same property_status fix as above.
+     * Confirmation email template for the enquiring user.
      */
     private function getConfirmationEmailTemplate($inquiry, $property) {
         $propertyUrl = base_url('property.php?slug=' . ($property['slug'] ?? ''));
@@ -360,7 +359,7 @@ class Mail {
             <h3>' . $this->nullsafe_sanitize($property['title'] ?? '') . '</h3>
             <p>
                 <span class="label">Price:</span>
-                <span class="value">' . format_price($property['price'] ?? 0, $property['property_status'] ?? 'sale') . '</span>
+                <span class="value">' . format_price($property['price'] ?? 0, $property['status'] ?? 'sale') . '</span>
             </p>
             <p>
                 <span class="label">Location:</span>

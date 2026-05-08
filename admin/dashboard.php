@@ -22,7 +22,8 @@ $db = Database::getInstance();
 $stats = $db->callProcedure('sp_get_admin_dashboard')[0][0];
 
 // Get recent properties
-$recentProperties = $propertyModel->getAll(['status' => 'pending'], 1, 5);
+$recentProperties = $propertyModel->getAll(['inventory_status' => Property::STATUS_PENDING], 1, 5);
+$csrfToken = generate_csrf_token();
 
 // Get recent inquiries
 $recentInquiries = $inquiryModel->getRecent(5);
@@ -490,7 +491,12 @@ $pageTitle = 'Admin Dashboard';
                                             <td><?php echo sanitize(truncate($property['title'], 30)); ?></td>
                                             <td><?php echo sanitize($property['agent_name']); ?></td>
                                             <td>
-                                                <a href="approve-property.php?id=<?php echo $property['id']; ?>" class="btn btn-success btn-sm">Approve</a>
+                                                <form action="properties.php?status=pending" method="POST" style="display:inline;">
+                                                    <input type="hidden" name="<?php echo CSRF_TOKEN_NAME; ?>" value="<?php echo $csrfToken; ?>">
+                                                    <input type="hidden" name="action" value="approve">
+                                                    <input type="hidden" name="property_id" value="<?php echo (int)$property['id']; ?>">
+                                                    <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                                                </form>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>

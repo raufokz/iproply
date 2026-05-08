@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800" role="img" aria-label="Property image placeholder">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e8eef5"/>
+      <stop offset="1" stop-color="#cfd9e6"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#sky)"/>
+  <rect x="170" y="505" width="860" height="145" rx="10" fill="#d8e1cb"/>
+  <path d="M320 490 600 270l280 220v200H320z" fill="#ffffff"/>
+  <path d="M275 500 600 245l325 255-42 54-283-222-283 222z" fill="#1e3b5a"/>
+  <rect x="455" y="525" width="110" height="165" rx="4" fill="#2c5282"/>
+  <rect x="635" y="520" width="165" height="110" rx="6" fill="#dcecff"/>
+  <path d="M645 575h145M717 530v90" stroke="#8bb2d9" stroke-width="10"/>
+  <text x="600" y="735" fill="#536579" font-family="Arial, sans-serif" font-size="34" font-weight="700" text-anchor="middle">Image coming soon</text>
+</svg>

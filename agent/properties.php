@@ -17,6 +17,7 @@ $propertyModel = new Property();
 
 // Get agent properties
 $properties = $propertyModel->getAgentProperties(current_user_id());
+$csrfToken = generate_csrf_token();
 
 $pageTitle = 'My Properties';
 ?>
@@ -366,12 +367,8 @@ require __DIR__ . '/partials/topbar.php';
                                     <?php foreach ($properties as $property): ?>
                                         <tr>
                                             <td>
-                                                <?php 
-                                                $images = $propertyModel->getImages($property['id']);
-                                                $primaryImage = !empty($images) ? $images[0] : null;
-                                                ?>
-                                                <?php if ($primaryImage): ?>
-                                                    <img src="<?php echo UPLOAD_URL . 'properties/' . $primaryImage['image_path']; ?>" alt="" class="property-thumb">
+                                                <?php if (!empty($property['primary_image'])): ?>
+                                                    <img src="<?php echo property_image_url($property['primary_image']); ?>" alt="" class="property-thumb">
                                                 <?php else: ?>
                                                     <div class="property-thumb" style="background: var(--secondary); display: flex; align-items: center; justify-content: center;">
                                                         <i class="fas fa-image" style="color: var(--text-secondary);"></i>
@@ -388,11 +385,18 @@ require __DIR__ . '/partials/topbar.php';
                                             <td><?php echo format_price($property['price'], $property['status']); ?></td>
                                             <td><?php echo ucfirst($property['status']); ?></td>
                                             <td>
-                                                <span class="badge badge-<?php 
-                                                    echo $property['property_status'] === 'active' ? 'success' : 
-                                                        ($property['property_status'] === 'pending' ? 'warning' : 
-                                                        ($property['property_status'] === 'sold' ? 'info' : 'error')); 
-                                                ?>">
+                                                <?php
+                                                    $statusBadge = match($property['property_status']) {
+                                                        Property::STATUS_ACTIVE => 'success',
+                                                        Property::STATUS_PENDING => 'warning',
+                                                        Property::STATUS_DRAFT,
+                                                        Property::STATUS_INACTIVE,
+                                                        Property::STATUS_SOLD,
+                                                        Property::STATUS_RENTED => 'info',
+                                                        default => 'error',
+                                                    };
+                                                ?>
+                                                <span class="badge badge-<?php echo $statusBadge; ?>">
                                                     <?php echo ucfirst($property['property_status']); ?>
                                                 </span>
                                             </td>
@@ -403,12 +407,18 @@ require __DIR__ . '/partials/topbar.php';
                                                     <a href="edit-property.php?id=<?php echo $property['id']; ?>" class="btn btn-sm btn-warning" title="Edit">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
-                                                    <a href="../property.php?slug=<?php echo $property['slug']; ?>" class="btn btn-sm btn-success" title="View" target="_blank">
-                                                        <i class="fas fa-eye"></i>
-                                                    </a>
-                                                    <a href="delete-property.php?id=<?php echo $property['id']; ?>" class="btn btn-sm btn-danger" title="Delete" onclick="return confirm('Are you sure you want to delete this property?');">
-                                                        <i class="fas fa-trash"></i>
-                                                    </a>
+                                                    <?php if ($property['property_status'] === Property::STATUS_ACTIVE): ?>
+                                                        <a href="../property.php?slug=<?php echo sanitize($property['slug']); ?>" class="btn btn-sm btn-success" title="View" target="_blank">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                    <?php endif; ?>
+                                                    <form action="delete-property.php" method="POST" style="display:inline;">
+                                                        <input type="hidden" name="<?php echo CSRF_TOKEN_NAME; ?>" value="<?php echo $csrfToken; ?>">
+                                                        <input type="hidden" name="property_id" value="<?php echo (int)$property['id']; ?>">
+                                                        <button type="submit" class="btn btn-sm btn-danger" title="Delete" onclick="return confirm('Are you sure you want to delete this property?');">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </form>
                                                 </div>
                                             </td>
                                         </tr>

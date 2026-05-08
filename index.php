@@ -224,9 +224,9 @@ include 'partials/header.php';
                 <a href="property.php?slug=<?php echo $p['slug']; ?>" style="text-decoration:none;color:inherit">
                     <div class="property-image">
                         <?php if ($p['primary_image']): ?>
-                            <img src="<?php echo UPLOAD_URL.'properties/'.$p['primary_image']; ?>" alt="<?php echo sanitize($p['title']); ?>">
+                            <img src="<?php echo property_image_url($p['primary_image']); ?>" alt="<?php echo sanitize($p['title']); ?>">
                         <?php else: ?>
-                            <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&h=400&fit=crop" alt="Property">
+                            <img src="<?php echo property_image_url(''); ?>" alt="Property image coming soon">
                         <?php endif; ?>
                         <span class="property-badge badge-<?php echo $p['status']; ?>">For <?php echo ucfirst($p['status']); ?></span>
                         <?php if($p['is_featured']): ?>
@@ -249,24 +249,13 @@ include 'partials/header.php';
                 </a>
             </div>
             <?php endforeach; ?>
-            <?php if(empty($featuredProperties)): for($i=1;$i<=6;$i++): ?>
-            <div class="property-card reveal">
-                <div class="property-image">
-                    <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&h=400&fit=crop&sig=<?php echo $i; ?>" alt="Property">
-                    <span class="property-badge badge-sale">For Sale</span>
-                    <div class="property-price">$<?php echo number_format(rand(350,950)*1000); ?></div>
-                </div>
-                <div class="property-content">
-                    <h3 class="property-title">Premium Residence #<?php echo $i; ?></h3>
-                    <div class="property-location"><i class="fas fa-map-marker-alt"></i>Beverly Hills, CA</div>
-                    <div class="property-features">
-                        <div class="property-feature"><i class="fas fa-bed"></i><span><?php echo rand(3,6); ?> Beds</span></div>
-                        <div class="property-feature"><i class="fas fa-bath"></i><span><?php echo rand(2,4); ?> Baths</span></div>
-                        <div class="property-feature"><i class="fas fa-ruler-combined"></i><span><?php echo number_format(rand(2500,7500)); ?> sqft</span></div>
-                    </div>
-                </div>
+            <?php if(empty($featuredProperties)): ?>
+            <div class="empty-state">
+                <i class="fas fa-home"></i>
+                <h3>No featured properties yet</h3>
+                <p>Featured active listings will appear here as soon as an admin marks them.</p>
             </div>
-            <?php endfor; endif; ?>
+            <?php endif; ?>
         </div>
         <div class="text-center mt-2xl">
             <a href="listings.php" class="btn btn-primary btn-lg">View All Properties <i class="fas fa-arrow-right"></i></a>
@@ -600,8 +589,8 @@ include 'partials/header.php';
             <div class="property-card reveal">
                 <a href="property.php?slug=<?php echo $p['slug']; ?>" style="text-decoration:none;color:inherit">
                     <div class="property-image">
-                        <?php if($p['primary_image']): ?><img src="<?php echo UPLOAD_URL.'properties/'.$p['primary_image']; ?>" alt="<?php echo sanitize($p['title']); ?>">
-                        <?php else: ?><img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&h=400&fit=crop" alt="Property"><?php endif; ?>
+                        <?php if($p['primary_image']): ?><img src="<?php echo property_image_url($p['primary_image']); ?>" alt="<?php echo sanitize($p['title']); ?>">
+                        <?php else: ?><img src="<?php echo property_image_url(''); ?>" alt="Property image coming soon"><?php endif; ?>
                         <span class="property-badge badge-<?php echo $p['status']; ?>">For <?php echo ucfirst($p['status']); ?></span>
                         <div class="property-price"><?php echo format_price($p['price'],$p['status']); ?></div>
                         <div class="nearby-badge" data-city="<?php echo htmlspecialchars($p['city']??''); ?>">
@@ -620,24 +609,13 @@ include 'partials/header.php';
                 </a>
             </div>
             <?php endforeach; ?>
-            <?php if(empty($latestProperties)): for($i=1;$i<=6;$i++): ?>
-            <div class="property-card reveal">
-                <div class="property-image">
-                    <img src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=600&h=400&fit=crop&sig=<?php echo $i+10; ?>" alt="Property">
-                    <span class="property-badge badge-rent">For Rent</span>
-                    <div class="property-price">$<?php echo number_format(rand(2500,8500)); ?>/mo</div>
-                </div>
-                <div class="property-content">
-                    <h3 class="property-title">Modern Apartment #<?php echo $i; ?></h3>
-                    <div class="property-location"><i class="fas fa-map-marker-alt"></i>Brooklyn, NY</div>
-                    <div class="property-features">
-                        <div class="property-feature"><i class="fas fa-bed"></i><span><?php echo rand(1,3); ?> Beds</span></div>
-                        <div class="property-feature"><i class="fas fa-bath"></i><span><?php echo rand(1,2); ?> Baths</span></div>
-                        <div class="property-feature"><i class="fas fa-ruler-combined"></i><span><?php echo number_format(rand(700,2200)); ?> sqft</span></div>
-                    </div>
-                </div>
+            <?php if(empty($latestProperties)): ?>
+            <div class="empty-state">
+                <i class="fas fa-building"></i>
+                <h3>No active listings yet</h3>
+                <p>Recently activated properties will appear here automatically.</p>
             </div>
-            <?php endfor; endif; ?>
+            <?php endif; ?>
         </div>
     </div>
 </section>

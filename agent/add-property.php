@@ -39,6 +39,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if (empty($errors)) {
+            $submitAction = $_POST['submit_action'] ?? 'submit';
+            $workflowStatus = $submitAction === 'draft'
+                ? Property::STATUS_DRAFT
+                : Property::STATUS_PENDING;
+
             // Prepare property data
             $propertyData = [
                 'agent_id' => current_user_id(),
@@ -48,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'price' => floatval($_POST['price']),
                 'price_type' => $_POST['price_type'] ?? 'fixed',
                 'status' => $_POST['status_type'] ?? 'sale',
-                'property_status' => 'pending',
+                'property_status' => $workflowStatus,
                 'bedrooms' => intval($_POST['bedrooms'] ?? 0),
                 'bathrooms' => floatval($_POST['bathrooms'] ?? 0),
                 'area_sqft' => floatval($_POST['area_sqft'] ?? 0),
@@ -82,9 +87,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     foreach ($uploadedImages as $index => $imageData) {
                         $propertyModel->addImage($propertyId, $imageData, $index === 0);
                     }
+
+                    if (!empty($upload->getErrors())) {
+                        set_flash_message('error', 'Property saved, but some images were skipped: ' . implode(' ', $upload->getErrors()));
+                    }
+
+                    if (!empty($upload->getWarnings())) {
+                        set_flash_message('warning', implode(' ', $upload->getWarnings()));
+                    }
                 }
 
-                set_flash_message('success', 'Property added successfully! It will be reviewed by an admin before going live.');
+                $message = $workflowStatus === Property::STATUS_DRAFT
+                    ? 'Property saved as a draft.'
+                    : 'Property added successfully! It will be reviewed by an admin before going live.';
+                set_flash_message('success', $message);
                 redirect('agent/properties.php');
             } else {
                 $errors = $propertyModel->getErrors();
@@ -624,8 +640,11 @@ require __DIR__ . '/partials/topbar.php';
                 <!-- Submit Buttons -->
                 <div style="display: flex; gap: 1rem; justify-content: flex-end;">
                     <a href="properties.php" class="btn btn-outline">Cancel</a>
+                    <button type="submit" name="submit_action" value="draft" class="btn btn-outline">
+                        <i class="fas fa-file"></i> Save Draft
+                    </button>
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Save Property
+                        <i class="fas fa-paper-plane"></i> Submit for Review
                     </button>
                 </div>
             </form>
