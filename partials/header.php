@@ -44,11 +44,19 @@ $resourcesNavActive = in_array($currentPage, ['blog', 'mortgage-calculator'], tr
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <?php
+        $stylePath = BASE_PATH . '/assets/css/style.css';
+        $styleVersion = is_file($stylePath) ? (string) filemtime($stylePath) : (string) time();
+    ?>
     <!-- Site stylesheet -->
-    <link rel="stylesheet" href="<?php echo asset_url('css/style.css'); ?>">
+    <link rel="stylesheet" href="<?php echo asset_url('css/style.css') . '?v=' . $styleVersion; ?>">
 
     <?php if (isset($extraCss)): foreach ($extraCss as $css): ?>
-        <link rel="stylesheet" href="<?php echo asset_url('css/' . $css); ?>">
+        <?php
+            $extraCssPath = BASE_PATH . '/assets/css/' . ltrim($css, '/');
+            $extraCssVersion = is_file($extraCssPath) ? (string) filemtime($extraCssPath) : $styleVersion;
+        ?>
+        <link rel="stylesheet" href="<?php echo asset_url('css/' . $css) . '?v=' . $extraCssVersion; ?>">
     <?php endforeach; endif; ?>
 </head>
 <body>
