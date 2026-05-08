@@ -405,74 +405,8 @@ include 'partials/header.php';
     </div>
 </section>
 
-<!-- =====================================================
-     REVIEWS & RATINGS
-     ===================================================== -->
-<section class="section" id="reviews">
-    <div class="container">
-        <div style="margin-bottom:3rem">
-            <div class="section-eyebrow">Reviews</div>
-            <h2 class="section-title">Verified Client Reviews</h2>
-            <div class="section-divider"></div>
-            <p class="section-subtitle">Honest feedback from buyers, sellers and renters nationwide.</p>
-        </div>
 
-        <div class="reviews-layout">
-            <!-- Summary card -->
-            <div class="reviews-summary reveal">
-                <div class="rscore">4.9<span class="rscore-denom">/5</span></div>
-                <div class="rstar-row">
-                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
-                </div>
-                <div class="rtotal">Based on 12,847 verified reviews</div>
-                <?php foreach([[5,91],[4,6],[3,2],[2,1],[1,0]] as [$s,$p]): ?>
-                <div class="rbar-row">
-                    <span class="rbar-lbl"><?php echo $s; ?></span>
-                    <div class="rbar-bg"><div class="rbar-fill" style="width:<?php echo $p; ?>%"></div></div>
-                    <span class="rbar-pct"><?php echo $p; ?>%</span>
-                </div>
-                <?php endforeach; ?>
-                <div style="margin-top:1.5rem">
-                    <?php foreach([['Agent Expertise','4.9'],['Listing Accuracy','4.8'],['Communication','5.0'],['Value for Money','4.7'],['Speed of Service','4.9']] as [$cat,$score]): ?>
-                    <div class="rcat-row"><span><?php echo $cat; ?></span><span><?php echo $score; ?> ★</span></div>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-
-            <!-- Review list -->
-            <div>
-                <?php
-                $reviews=[
-                    ['Brian Gallagher','New York, NY · Purchased Dec 2024','Exceptional from first call to closing. My agent knew the Manhattan market inside out and helped us secure a 2-bed at below asking. The legal team handled all paperwork flawlessly. This is how real estate should work.',5,'Upper West Side, NYC'],
-                    ['Jessica Tran','Los Angeles, CA · Rented Nov 2024','Found my apartment in Silver Lake in 5 days. Accurate photos, responsive agent, entirely digital application. If I ever move again, iProply is my first call.',5,'Silver Lake, Los Angeles'],
-                    ['Kevin O\'Brien','Chicago, IL · Sold Oct 2024','Listed my Lincoln Park home and had a full-price offer in 9 days. The professional listing package — staging advice, pro photography, featured placement — is worth every penny.',5,'Lincoln Park, Chicago'],
-                    ['Angela Morris','Miami, FL · Purchased Sep 2024','The neighborhood scoring and school district data helped us narrow 200 listings to 12 worth visiting. Our agent walked us through each one honestly, including the downsides. Four stars because the mobile app needs polish.',4,'Coral Gables, Miami'],
-                ];
-                foreach($reviews as [$name,$meta,$text,$stars,$prop]):
-                ?>
-                <div class="rcard reveal">
-                    <div class="rcard-top">
-                        <div>
-                            <div class="rcard-name"><?php echo $name; ?></div>
-                            <div class="rcard-meta"><?php echo $meta; ?></div>
-                            <div class="rcard-stars">
-                                <?php for($s=0;$s<5;$s++): ?><i class="fas fa-star<?php echo $s<$stars?'':'-o'; ?>"></i><?php endfor; ?>
-                            </div>
-                        </div>
-                        <div class="rcard-prop"><?php echo $prop; ?></div>
-                    </div>
-                    <p class="rcard-text"><?php echo htmlspecialchars($text); ?></p>
-                    <div class="rcard-verified"><i class="fas fa-check-circle"></i> Verified Purchase</div>
-                </div>
-                <?php endforeach; ?>
-                <div style="text-align:center;margin-top:1.5rem">
-                    <a href="reviews.php" class="btn-ghost-primary">Read All 12,847 Reviews <i class="fas fa-arrow-right"></i></a>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+    
 
 <!-- =====================================================
      PRICING
