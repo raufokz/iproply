@@ -48,6 +48,31 @@ jobs:
             --exclude ".env" \
             ./ ${{ secrets.HOSTINGER_USER }}@${{ secrets.HOSTINGER_HOST }}:${{ secrets.HOSTINGER_PATH }}
 
+      - name: Run database migrations on server
+        env:
+          SSH_HOST: ${{ secrets.HOSTINGER_HOST }}
+          SSH_PORT: ${{ secrets.HOSTINGER_PORT }}
+          SSH_USER: ${{ secrets.HOSTINGER_USER }}
+          DEPLOY_PATH: ${{ secrets.HOSTINGER_PATH }}
+          DB_HOST: ${{ secrets.HOSTINGER_DB_HOST }}
+          DB_USER: ${{ secrets.HOSTINGER_DB_USER }}
+          DB_PASS: ${{ secrets.HOSTINGER_DB_PASSWORD }}
+          DB_NAME: ${{ secrets.HOSTINGER_DB_NAME }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${DB_HOST:-}" || -z "${DB_USER:-}" || -z "${DB_PASS:-}" || -z "${DB_NAME:-}" || -z "${DEPLOY_PATH:-}" ]]; then
+            echo "::warning::Skipping database migrations — add secrets HOSTINGER_DB_HOST, HOSTINGER_DB_USER, HOSTINGER_DB_PASSWORD, HOSTINGER_DB_NAME (and ensure HOSTINGER_PATH is set)."
+            exit 0
+          fi
+          echo "Applying SQL migrations via SSH (${SSH_USER}@${SSH_HOST}:${SSH_PORT}) ..."
+          Q_DEPLOY="$(printf '%q' "$DEPLOY_PATH")"
+          Q_HOST="$(printf '%q' "$DB_HOST")"
+          Q_USER="$(printf '%q' "$DB_USER")"
+          Q_PASS="$(printf '%q' "$DB_PASS")"
+          Q_NAME="$(printf '%q' "$DB_NAME")"
+          ssh -4 -p "$SSH_PORT" -o ConnectTimeout=30 -o BatchMode=yes "$SSH_USER@$SSH_HOST" \
+            "set -euo pipefail && cd ${Q_DEPLOY} && chmod +x database/migrations/run_all_migrations.sh 2>/dev/null || true && MYSQL_HOST=${Q_HOST} MYSQL_USER=${Q_USER} MYSQL_PASSWORD=${Q_PASS} MYSQL_DATABASE=${Q_NAME} bash database/migrations/run_all_migrations.sh"
+
       # Uncomment if you need Composer on the server
       # - name: Install Composer dependencies on server
       #   run: |
