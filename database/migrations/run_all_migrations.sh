@@ -84,9 +84,13 @@ if [[ ${#candidates[@]} -eq 0 ]]; then
   exit 0
 fi
 
-mapfile -t sorted < <(printf '%s\n' "${candidates[@]}" | sort)
+# Sort without process substitution (< <(...) uses /dev/fd — fails on some hosts / restricted SSH)
+_sort_tmp="$(mktemp)"
+trap 'rm -f "$_sort_tmp"' EXIT
+printf '%s\n' "${candidates[@]}" | sort > "$_sort_tmp"
 
-for base in "${sorted[@]}"; do
+while IFS= read -r base || [[ -n "${base:-}" ]]; do
+  [[ -z "${base:-}" ]] && continue
   if [[ "${SKIP_OPTIONAL:-0}" == "1" && "$base" == 007_soft_delete_columns.sql ]]; then
     echo "==> Skipping optional: $base (SKIP_OPTIONAL=1)"
     continue
@@ -97,6 +101,6 @@ for base in "${sorted[@]}"; do
     continue
   fi
   apply_sql "$f"
-done
+done < "$_sort_tmp"
 
 echo "==> Migrations complete."
