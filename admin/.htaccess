@@ -1,0 +1,5 @@
+# Admin area — do not cache (POST / CSRF forms break when edge caches GET responses or mishandles POST)
+<IfModule mod_headers.c>
+    Header set Cache-Control "no-store, no-cache, must-revalidate, private"
+    Header set Pragma "no-cache"
+</IfModule>
