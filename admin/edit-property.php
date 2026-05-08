@@ -75,6 +75,14 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!isset($_POST[CSRF_TOKEN_NAME]) || !verify_csrf_token($_POST[CSRF_TOKEN_NAME])) {
         $errors[] = 'Invalid request. Please try again.';
+    } elseif (($_POST['action'] ?? '') === 'delete_property') {
+        if ($propertyModel->delete($propertyId)) {
+            set_flash_message('success', 'Property deleted and images cleaned up.');
+            redirect('admin/properties.php');
+        }
+
+        set_flash_message('error', implode(' ', $propertyModel->getErrors()) ?: 'Unable to delete property.');
+        redirect('admin/edit-property.php?id=' . $propertyId);
     } elseif (isset($_POST['delete_image_id'])) {
         if ($propertyModel->deleteImage((int) $_POST['delete_image_id'], $propertyId)) {
             set_flash_message('success', 'Image deleted.');
@@ -199,6 +207,7 @@ $csrfToken = generate_csrf_token();
         .image-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
         .image-order { width: 70px; }
         .btn-row { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem; }
+        .btn-danger { background: var(--error); color: #fff; }
         @media (max-width: 960px) { .editor-grid, .form-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -369,6 +378,9 @@ $csrfToken = generate_csrf_token();
                                 </label>
                                 <div class="btn-row">
                                     <a href="properties.php" class="btn btn-outline">Cancel</a>
+                                    <button type="submit" name="action" value="delete_property" class="btn btn-danger" formnovalidate onclick="return confirm('Permanently delete this property and all of its images?');">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
                                     <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Property</button>
                                 </div>
                             </div>

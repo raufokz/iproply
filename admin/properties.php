@@ -53,6 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 break;
 
             case 'reject':
+            case 'delete':
                 if ($propertyModel->delete($propertyId)) {
                     set_flash_message('success', 'Property removed and images cleaned up.');
                 } else {
@@ -534,6 +535,18 @@ $pageTitle = 'Manage Properties';
                                             </button>
                                         </form>
 
+                                    <?php endif; ?>
+
+                                    <?php if ($property['property_status'] !== 'pending'): ?>
+                                        <form method="POST" style="display:inline;">
+                                            <input type="hidden" name="<?php echo CSRF_TOKEN_NAME; ?>" value="<?php echo $csrfToken; ?>">
+                                            <input type="hidden" name="action" value="delete">
+                                            <input type="hidden" name="property_id" value="<?php echo (int)$property['id']; ?>">
+                                            <button type="submit" class="action-btn btn-reject"
+                                                    onclick="return confirm('Permanently delete this property and its images?');">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </button>
+                                        </form>
                                     <?php endif; ?>
 
                                 </div><!-- /.actions -->
