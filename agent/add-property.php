@@ -534,7 +534,7 @@ require __DIR__ . '/partials/topbar.php';
                             
                             <div class="form-group">
                                 <label for="lot_size">Lot Size (sqft)</label>
-                                <input type="number" id="lot_size" name="lot_size" min="0" value="<?php echo sanitize($_POST['lot_size'] ?? ''); ?>">
+                                <input type="number" id="lot_size" name="lot_size" min="0" step="0.01" value="<?php echo sanitize($_POST['lot_size'] ?? ''); ?>">
                             </div>
                             
                             <div class="form-group">
