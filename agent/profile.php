@@ -155,6 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         ['avatar' => $filename, 'updated_at' => date('Y-m-d H:i:s')],
                         'id = :id', ['id' => current_user_id()]
                     );
+                    $_SESSION['user_avatar'] = $filename;
                     set_flash_message('success', 'Profile photo updated.');
                     redirect('agent/profile.php');
                 } else {
@@ -168,9 +169,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $agent = $db->query("SELECT * FROM agents WHERE id = :id LIMIT 1", ['id' => current_user_id()])->fetch();
 }
 
-$avatarUrl = !empty($agent['avatar'])
-    ? UPLOAD_URL . 'avatars/' . $agent['avatar']
-    : base_url('assets/images/default-avatar.png');
+$agentFullName = trim(($agent['first_name'] ?? '') . ' ' . ($agent['last_name'] ?? ''));
+$avatarUrl = agent_avatar_url($agent['avatar'] ?? '', $agentFullName, 240);
 
 $pageTitle = 'My Profile';
 $flashMessages = get_flash_messages();
@@ -537,7 +537,7 @@ require __DIR__ . '/partials/topbar.php';
         <!-- Profile hero -->
         <div class="profile-hero">
             <div class="hero-avatar-wrap">
-                <img src="<?php echo $avatarUrl; ?>" alt="Avatar" class="hero-avatar" id="heroAvatar">
+                <img src="<?php echo sanitize($avatarUrl); ?>" alt="Avatar" class="hero-avatar" id="heroAvatar">
                 <label for="quickAvatarInput" class="hero-avatar-edit" title="Change photo">
                     <i class="fas fa-camera"></i>
                 </label>
@@ -766,7 +766,7 @@ require __DIR__ . '/partials/topbar.php';
                         <input type="hidden" name="action" value="upload_avatar">
 
                         <div style="text-align:center; margin-bottom:1.5rem;">
-                            <img src="<?php echo $avatarUrl; ?>" alt="Current Avatar"
+                            <img src="<?php echo sanitize($avatarUrl); ?>" alt="Current Avatar"
                                 style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:3px solid var(--border);margin-bottom:.75rem;" id="bigAvatarPreview">
                             <p style="font-size:.875rem;color:var(--text-secondary);">Current profile photo</p>
                         </div>

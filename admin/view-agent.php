@@ -29,6 +29,8 @@ if (empty($agents)) {
 }
 
 $agent = $agents[0];
+$agentName = trim(($agent['first_name'] ?? '') . ' ' . ($agent['last_name'] ?? ''));
+$agentAvatarUrl = agent_avatar_url($agent['avatar'] ?? '', $agentName, 240);
 
 // Get agent's properties count
 $properties = $db->select('properties', 'COUNT(*) as count', 'agent_id = :id', ['id' => $agentId]);
@@ -222,11 +224,7 @@ $pageTitle = 'View Agent Profile';
                 <!-- Avatar Section -->
                 <div class="profile-avatar-section">
                     <div class="profile-avatar">
-                        <?php if (!empty($agent['avatar'])): ?>
-                            <img src="<?php echo UPLOAD_URL . '/' . sanitize($agent['avatar']); ?>" alt="<?php echo sanitize($agent['first_name']); ?>">
-                        <?php else: ?>
-                            <i class="fas fa-user"></i>
-                        <?php endif; ?>
+                        <img src="<?php echo sanitize($agentAvatarUrl); ?>" alt="<?php echo sanitize($agentName); ?>">
                     </div>
                     <span class="badge badge-<?php echo $agent['status'] === 'active' ? 'success' : ($agent['status'] === 'pending' ? 'warning' : 'info'); ?>">
                         <?php echo ucfirst($agent['status']); ?>
@@ -235,7 +233,7 @@ $pageTitle = 'View Agent Profile';
                 
                 <!-- Profile Info -->
                 <div class="profile-info">
-                    <div class="profile-name"><?php echo sanitize($agent['first_name'] . ' ' . $agent['last_name']); ?></div>
+                    <div class="profile-name"><?php echo sanitize($agentName); ?></div>
                     <p style="color: var(--text-secondary); margin-bottom: 1rem;">
                         <i class="fas fa-license"></i> License: <?php echo sanitize($agent['license_number']); ?>
                     </p>

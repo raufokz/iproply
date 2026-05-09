@@ -234,11 +234,7 @@ include 'partials/header.php';
                 <div class="agent-card-detail">
                     <h2>Contact Agent</h2>
                     <div class="agent-card-header">
-                        <?php if ($property['agent_avatar']): ?>
-                            <img src="<?php echo UPLOAD_URL . 'agents/' . $property['agent_avatar']; ?>" alt="<?php echo sanitize($property['agent_name']); ?>">
-                        <?php else: ?>
-                            <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($property['agent_name']); ?>&background=1e3b5a&color=fff" alt="<?php echo sanitize($property['agent_name']); ?>">
-                        <?php endif; ?>
+                        <img src="<?php echo sanitize(agent_avatar_url($property['agent_avatar'] ?? '', $property['agent_name'] ?? 'Agent', 160)); ?>" alt="<?php echo sanitize($property['agent_name']); ?>">
                         <div class="agent-card-info">
                             <h3><?php echo sanitize($property['agent_name']); ?></h3>
                             <p>Real Estate Agent</p>

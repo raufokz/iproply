@@ -42,17 +42,18 @@ include 'partials/header.php';
         <?php else: ?>
             <div class="agents-grid compact" id="agentsGrid">
                 <?php foreach ($agents as $agent): 
-                    $fullName = sanitize($agent['first_name'] . ' ' . $agent['last_name']);
-                    $avatar = $agent['avatar'] ? UPLOAD_URL . 'agents/' . $agent['avatar'] : 'https://ui-avatars.com/api/?name=' . urlencode($fullName) . '&background=1e3b5a&color=fff&size=400&bold=true';
+                    $fullNameRaw = trim(($agent['first_name'] ?? '') . ' ' . ($agent['last_name'] ?? ''));
+                    $fullName = sanitize($fullNameRaw);
+                    $avatar = agent_avatar_url($agent['avatar'] ?? '', $fullNameRaw, 400);
                     $propertyCount = $db->count('properties', 'agent_id = :agent_id AND property_status = :status', [
                         'agent_id' => $agent['id'],
                         'status' => 'active'
                     ]);
                 ?>
-                    <div class="agent-card" data-agent-name="<?php echo strtolower($fullName); ?>">
+                    <div class="agent-card" data-agent-name="<?php echo sanitize(strtolower($fullNameRaw)); ?>">
                         <div class="agent-card-inner">
                             <div class="agent-card-image">
-                                <img src="<?php echo $avatar; ?>" alt="<?php echo $fullName; ?>" loading="lazy">
+                                <img src="<?php echo sanitize($avatar); ?>" alt="<?php echo $fullName; ?>" loading="lazy">
                                 <?php if ($agent['is_featured']): ?>
                                     <span class="featured-badge">Featured</span>
                                 <?php endif; ?>

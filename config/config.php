@@ -178,6 +178,56 @@ function property_image_url($imagePath) {
     return UPLOAD_URL . 'properties/' . rawurlencode($filename);
 }
 
+function ui_avatar_url($name, $size = 400) {
+    $displayName = trim((string) $name);
+    if ($displayName === '') {
+        $displayName = 'Agent';
+    }
+
+    return 'https://ui-avatars.com/api/?name=' . rawurlencode($displayName) . '&background=1e3b5a&color=fff&size=' . (int) $size . '&bold=true';
+}
+
+function agent_avatar_url($avatar, $agentName = 'Agent', $size = 400) {
+    $avatar = trim((string) $avatar);
+
+    if ($avatar === '') {
+        return ui_avatar_url($agentName, $size);
+    }
+
+    if (preg_match('#^https?://#i', $avatar)) {
+        return $avatar;
+    }
+
+    $normalized = str_replace('\\', '/', $avatar);
+    $normalized = preg_replace('#^/?(?:assets/)?uploads/#i', '', $normalized);
+    $normalized = trim($normalized, '/');
+    $parts = explode('/', $normalized);
+
+    if (count($parts) >= 2 && in_array($parts[0], ['avatars', 'agents'], true)) {
+        $directory = $parts[0];
+        $filename = basename(end($parts));
+        $filepath = UPLOAD_PATH . $directory . '/' . $filename;
+
+        if ($filename !== '' && is_file($filepath)) {
+            return UPLOAD_URL . $directory . '/' . rawurlencode($filename);
+        }
+    }
+
+    $filename = basename($normalized);
+    if ($filename === '') {
+        return ui_avatar_url($agentName, $size);
+    }
+
+    foreach (['avatars', 'agents'] as $directory) {
+        $filepath = UPLOAD_PATH . $directory . '/' . $filename;
+        if (is_file($filepath)) {
+            return UPLOAD_URL . $directory . '/' . rawurlencode($filename);
+        }
+    }
+
+    return ui_avatar_url($agentName, $size);
+}
+
 function redirect($path) {
     header('Location: ' . base_url($path));
     exit;
