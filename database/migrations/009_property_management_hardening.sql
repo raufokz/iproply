@@ -60,6 +60,7 @@ DROP PROCEDURE IF EXISTS sp_get_admin_dashboard;
 DELIMITER //
 
 CREATE PROCEDURE sp_get_agent_dashboard(IN p_agent_id INT)
+SQL SECURITY INVOKER
 BEGIN
     SELECT
         COUNT(DISTINCT p.id) AS total_properties,
@@ -79,6 +80,7 @@ BEGIN
 END //
 
 CREATE PROCEDURE sp_get_admin_dashboard()
+SQL SECURITY INVOKER
 BEGIN
     SELECT
         (SELECT COUNT(*) FROM properties) AS total_properties,

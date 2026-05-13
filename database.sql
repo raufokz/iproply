@@ -457,7 +457,7 @@ CREATE TABLE inquiries (
 -- ============================================
 
 -- View: Active properties with agent info
-CREATE OR REPLACE VIEW vw_active_properties AS
+CREATE OR REPLACE SQL SECURITY INVOKER VIEW vw_active_properties AS
 SELECT 
     p.*,
     CONCAT(a.first_name, ' ', a.last_name) as agent_name,
@@ -473,7 +473,7 @@ LEFT JOIN categories c ON p.category_id = c.id
 WHERE p.property_status = 'active';
 
 -- View: Featured properties
-CREATE OR REPLACE VIEW vw_featured_properties AS
+CREATE OR REPLACE SQL SECURITY INVOKER VIEW vw_featured_properties AS
 SELECT 
     p.*,
     CONCAT(a.first_name, ' ', a.last_name) as agent_name,
@@ -488,7 +488,7 @@ WHERE p.is_featured = 1 AND p.property_status = 'active'
 ORDER BY p.created_at DESC;
 
 -- View: Agent statistics
-CREATE OR REPLACE VIEW vw_agent_stats AS
+CREATE OR REPLACE SQL SECURITY INVOKER VIEW vw_agent_stats AS
 SELECT 
     a.id,
     CONCAT(a.first_name, ' ', a.last_name) as agent_name,
@@ -525,6 +525,7 @@ CREATE PROCEDURE sp_search_properties(
     IN p_limit INT,
     IN p_offset INT
 )
+SQL SECURITY INVOKER
 BEGIN
     SELECT 
         p.*,
@@ -552,6 +553,7 @@ END //
 
 -- Procedure: Get property details with images
 CREATE PROCEDURE sp_get_property_details(IN p_property_id INT)
+SQL SECURITY INVOKER
 BEGIN
     SELECT 
         p.*,
@@ -576,6 +578,7 @@ END //
 
 -- Procedure: Get agent dashboard stats
 CREATE PROCEDURE sp_get_agent_dashboard(IN p_agent_id INT)
+SQL SECURITY INVOKER
 BEGIN
     SELECT 
         COUNT(DISTINCT p.id) as total_properties,
@@ -596,6 +599,7 @@ END //
 
 -- Procedure: Get admin dashboard stats
 CREATE PROCEDURE sp_get_admin_dashboard()
+SQL SECURITY INVOKER
 BEGIN
     SELECT 
         (SELECT COUNT(*) FROM properties) as total_properties,
