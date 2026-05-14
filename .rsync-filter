@@ -1,0 +1,38 @@
+# =============================================
+# iProply rsync filter rules (defense-in-depth)
+#
+# This file is read by rsync via the
+# --filter="dir-merge,- .rsync-filter" flag
+# in deploy.yml. Lines starting with "-" are
+# EXCLUDE rules — matching paths are never
+# deleted or overwritten on the server.
+#
+# These rules work as a SECOND LAYER on top of
+# the explicit --exclude flags in deploy.yml.
+# =============================================
+
+# ── User-uploaded content (NEVER delete) ────
+- assets/uploads/properties/
+- assets/uploads/thumbnails/
+- assets/uploads/avatars/
+- assets/uploads/agents/
+- assets/uploads/temp/
+
+# ── Environment & secrets ───────────────────
+- .env
+- .env.*
+
+# ── Server-side caches & logs ───────────────
+- cache/
+- tmp/
+- *.log
+- error_log
+
+# ── Dev-only scripts (exclude from deploy) ──
+- _fix.php
+- check_tables.php
+- check_images.php
+- import_blogs_from_doc.php
+- migrate_blogs.php
+- doc_blogs.txt
+- index-raw.txt

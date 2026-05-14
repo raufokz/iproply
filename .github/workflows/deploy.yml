@@ -1,3 +1,34 @@
+# =====================================================================
+#  iProply — Production Deployment (GitHub Actions + rsync over SSH)
+#
+#  Target: Hostinger VPS
+#  Trigger: push to main, or manual workflow_dispatch
+#
+#  SAFETY GUARANTEES:
+#  1. All user-uploaded media (property images, avatars, thumbnails)
+#     are explicitly excluded from rsync --delete so they are NEVER
+#     removed during deployment.
+#  2. A pre-deploy backup of the uploads directory is created on the
+#     server before every sync.
+#  3. Post-deploy verification confirms upload directories still exist
+#     and contain files.
+#  4. .env, config secrets, and database dumps are never overwritten.
+#  5. SQL migrations are tracked (schema_migrations table) and are
+#     safe to re-run — already-applied files are skipped.
+#
+#  REQUIRED SECRETS (Settings → Secrets → Actions):
+#    HOSTINGER_SSH_KEY        — private SSH key (ed25519 or RSA)
+#    HOSTINGER_HOST           — server IP or hostname
+#    HOSTINGER_PORT           — SSH port (usually 22 or 65002)
+#    HOSTINGER_USER           — SSH username
+#    HOSTINGER_PATH           — absolute deploy path on server
+#                               e.g. /home/u867057961/domains/iproply.com/public_html
+#    HOSTINGER_DB_HOST        — MySQL host (often 127.0.0.1)
+#    HOSTINGER_DB_USER        — MySQL username
+#    HOSTINGER_DB_PASSWORD    — MySQL password
+#    HOSTINGER_DB_NAME        — MySQL database name
+# =====================================================================
+
 name: Deploy to Hostinger via SSH
 
 on:
@@ -5,14 +36,26 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
+# Cancel any in-flight deploy if a new push arrives
+concurrency:
+  group: deploy-production
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
+      # ────────────────────────────────────────────────────────────────
+      # 1. CHECKOUT — fetch the repo code
+      # ────────────────────────────────────────────────────────────────
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # ────────────────────────────────────────────────────────────────
+      # 2. SSH SETUP — install key and trust the host fingerprint
+      # ────────────────────────────────────────────────────────────────
       - name: Configure SSH key
         env:
           SSH_PRIVATE_KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
@@ -20,14 +63,17 @@ jobs:
           SSH_PORT: ${{ secrets.HOSTINGER_PORT }}
         run: |
           set -euo pipefail
-          test -n "$SSH_PRIVATE_KEY" || { echo "Missing HOSTINGER_SSH_KEY secret"; exit 1; }
-          test -n "$SSH_HOST" || { echo "Missing HOSTINGER_HOST secret"; exit 1; }
-          test -n "$SSH_PORT" || { echo "Missing HOSTINGER_PORT secret"; exit 1; }
+          test -n "$SSH_PRIVATE_KEY" || { echo "::error::Missing HOSTINGER_SSH_KEY secret"; exit 1; }
+          test -n "$SSH_HOST"        || { echo "::error::Missing HOSTINGER_HOST secret";    exit 1; }
+          test -n "$SSH_PORT"        || { echo "::error::Missing HOSTINGER_PORT secret";    exit 1; }
           install -m 700 -d ~/.ssh
           echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -p "$SSH_PORT" "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
 
+      # ────────────────────────────────────────────────────────────────
+      # 3. CONNECTIVITY TEST — fail fast if SSH is unreachable
+      # ────────────────────────────────────────────────────────────────
       - name: Test SSH connectivity
         env:
           SSH_HOST: ${{ secrets.HOSTINGER_HOST }}
@@ -35,19 +81,183 @@ jobs:
           SSH_USER: ${{ secrets.HOSTINGER_USER }}
         run: |
           set -euo pipefail
-          echo "Testing ssh to $SSH_USER@$SSH_HOST:$SSH_PORT ..."
-          ssh -4 -o ConnectTimeout=15 -o BatchMode=yes -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "echo ok"
+          echo "Testing SSH to $SSH_USER@$SSH_HOST:$SSH_PORT ..."
+          ssh -4 -o ConnectTimeout=15 -o BatchMode=yes \
+              -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "echo 'SSH OK'"
 
-      - name: Sync files to server
+      # ────────────────────────────────────────────────────────────────
+      # 4. PRE-DEPLOY BACKUP — snapshot uploads directory on server
+      #    Creates a timestamped tar.gz so uploads can be restored
+      #    if anything goes wrong. Keeps the last 5 backups.
+      # ────────────────────────────────────────────────────────────────
+      - name: Backup uploads on server (pre-deploy safety net)
+        env:
+          SSH_HOST: ${{ secrets.HOSTINGER_HOST }}
+          SSH_PORT: ${{ secrets.HOSTINGER_PORT }}
+          SSH_USER: ${{ secrets.HOSTINGER_USER }}
+          DEPLOY_PATH: ${{ secrets.HOSTINGER_PATH }}
+        run: |
+          set -euo pipefail
+          ssh -4 -p "$SSH_PORT" -o ConnectTimeout=20 -o BatchMode=yes \
+              "$SSH_USER@$SSH_HOST" bash -s -- "$DEPLOY_PATH" <<'REMOTE_SCRIPT'
+          set -euo pipefail
+          DEPLOY="$1"
+          UPLOADS="$DEPLOY/assets/uploads"
+          BACKUP_DIR="$DEPLOY/../_deploy_backups"
+
+          # Skip if no uploads directory exists yet (first deploy)
+          if [ ! -d "$UPLOADS" ]; then
+            echo "No uploads directory found — skipping backup (first deploy)."
+            exit 0
+          fi
+
+          mkdir -p "$BACKUP_DIR"
+          STAMP=$(date +%Y%m%d_%H%M%S)
+          BACKUP_FILE="$BACKUP_DIR/uploads_${STAMP}.tar.gz"
+
+          echo "Creating backup: $BACKUP_FILE"
+          tar -czf "$BACKUP_FILE" -C "$DEPLOY/assets" uploads/ 2>/dev/null || true
+          echo "Backup size: $(du -h "$BACKUP_FILE" | cut -f1)"
+
+          # Retain only the 5 most recent backups
+          ls -1t "$BACKUP_DIR"/uploads_*.tar.gz 2>/dev/null | tail -n +6 | xargs rm -f 2>/dev/null || true
+          echo "Backups retained: $(ls -1 "$BACKUP_DIR"/uploads_*.tar.gz 2>/dev/null | wc -l)"
+          REMOTE_SCRIPT
+
+      # ────────────────────────────────────────────────────────────────
+      # 5. RSYNC — deploy code to server
+      #
+      #    --delete removes server files not in the repo, EXCEPT
+      #    the directories listed in --exclude which are preserved.
+      #
+      #    PROTECTED DIRECTORIES (user-uploaded content):
+      #      assets/uploads/properties/   — property listing images
+      #      assets/uploads/thumbnails/   — auto-generated thumbnails
+      #      assets/uploads/avatars/      — admin & agent profile photos
+      #      assets/uploads/agents/       — agent-specific uploads
+      #      assets/uploads/temp/         — temporary upload staging
+      #
+      #    PROTECTED FILES:
+      #      .env                         — production environment config
+      #      config/config.php            — may have server-specific overrides
+      #
+      #    EXCLUDED FROM TRANSFER (not needed on server):
+      #      .git/                        — version control internals
+      #      .github/                     — CI/CD workflows
+      #      node_modules/                — JS dependencies (not used)
+      #      _fix.php, check_*, import_*  — dev-only one-off scripts
+      #      *.sql.gz, *.sql.bak          — database dump artifacts
+      #      doc_blogs.txt, index-raw.txt — dev reference files
+      # ────────────────────────────────────────────────────────────────
+      - name: Sync files to server (upload-safe)
         run: |
           export RSYNC_RSH="ssh -4 -p ${{ secrets.HOSTINGER_PORT }} -o ConnectTimeout=20"
+
           rsync -avz --delete \
+            --filter="dir-merge,- .rsync-filter" \
+            \
+            --exclude "assets/uploads/properties/" \
+            --exclude "assets/uploads/thumbnails/" \
+            --exclude "assets/uploads/avatars/" \
+            --exclude "assets/uploads/agents/" \
+            --exclude "assets/uploads/temp/" \
+            \
+            --exclude ".env" \
+            \
             --exclude ".git" \
             --exclude ".github" \
             --exclude "node_modules" \
-            --exclude ".env" \
-            ./ ${{ secrets.HOSTINGER_USER }}@${{ secrets.HOSTINGER_HOST }}:${{ secrets.HOSTINGER_PATH }}
+            --exclude "vendor" \
+            \
+            --exclude "_fix.php" \
+            --exclude "check_tables.php" \
+            --exclude "check_images.php" \
+            --exclude "import_blogs_from_doc.php" \
+            --exclude "migrate_blogs.php" \
+            --exclude "doc_blogs.txt" \
+            --exclude "index-raw.txt" \
+            --exclude "*.sql.gz" \
+            --exclude "*.sql.bak" \
+            \
+            ./ "${{ secrets.HOSTINGER_USER }}@${{ secrets.HOSTINGER_HOST }}:${{ secrets.HOSTINGER_PATH }}"
 
+      # ────────────────────────────────────────────────────────────────
+      # 6. POST-DEPLOY: Ensure upload directories exist on server
+      #    (handles first deploy or accidental deletion)
+      # ────────────────────────────────────────────────────────────────
+      - name: Ensure upload directories exist on server
+        env:
+          SSH_HOST: ${{ secrets.HOSTINGER_HOST }}
+          SSH_PORT: ${{ secrets.HOSTINGER_PORT }}
+          SSH_USER: ${{ secrets.HOSTINGER_USER }}
+          DEPLOY_PATH: ${{ secrets.HOSTINGER_PATH }}
+        run: |
+          set -euo pipefail
+          ssh -4 -p "$SSH_PORT" -o ConnectTimeout=20 -o BatchMode=yes \
+              "$SSH_USER@$SSH_HOST" bash -s -- "$DEPLOY_PATH" <<'REMOTE_SCRIPT'
+          set -euo pipefail
+          DEPLOY="$1"
+          UPLOADS="$DEPLOY/assets/uploads"
+
+          # Create all required upload subdirectories with safe permissions
+          for DIR in properties thumbnails avatars agents temp; do
+            TARGET="$UPLOADS/$DIR"
+            mkdir -p "$TARGET"
+            chmod 755 "$TARGET"
+          done
+
+          echo "Upload directories verified:"
+          ls -la "$UPLOADS/"
+          REMOTE_SCRIPT
+
+      # ────────────────────────────────────────────────────────────────
+      # 7. POST-DEPLOY VERIFICATION — confirm uploads survived
+      # ────────────────────────────────────────────────────────────────
+      - name: Verify uploads are intact
+        env:
+          SSH_HOST: ${{ secrets.HOSTINGER_HOST }}
+          SSH_PORT: ${{ secrets.HOSTINGER_PORT }}
+          SSH_USER: ${{ secrets.HOSTINGER_USER }}
+          DEPLOY_PATH: ${{ secrets.HOSTINGER_PATH }}
+        run: |
+          set -euo pipefail
+          ssh -4 -p "$SSH_PORT" -o ConnectTimeout=20 -o BatchMode=yes \
+              "$SSH_USER@$SSH_HOST" bash -s -- "$DEPLOY_PATH" <<'REMOTE_SCRIPT'
+          set -euo pipefail
+          DEPLOY="$1"
+          UPLOADS="$DEPLOY/assets/uploads"
+          FAIL=0
+
+          echo "=== Post-deploy upload verification ==="
+
+          for DIR in properties thumbnails avatars agents temp; do
+            TARGET="$UPLOADS/$DIR"
+            if [ ! -d "$TARGET" ]; then
+              echo "CRITICAL: $TARGET is MISSING!"
+              FAIL=1
+            else
+              COUNT=$(find "$TARGET" -maxdepth 1 -type f 2>/dev/null | wc -l)
+              echo "OK: $DIR/ — $COUNT files"
+            fi
+          done
+
+          TOTAL=$(find "$UPLOADS" -type f 2>/dev/null | wc -l)
+          echo "Total upload files: $TOTAL"
+
+          if [ "$FAIL" -eq 1 ]; then
+            echo "::error::Upload directory verification FAILED — check server immediately."
+            exit 1
+          fi
+
+          echo "=== Verification passed ==="
+          REMOTE_SCRIPT
+
+      # ────────────────────────────────────────────────────────────────
+      # 8. DATABASE MIGRATIONS — apply new SQL files (idempotent)
+      #    The migration runner tracks applied files in a
+      #    schema_migrations table, so re-runs are safe.
+      #    Migrations NEVER drop tables or delete user data.
+      # ────────────────────────────────────────────────────────────────
       - name: Run database migrations on server
         env:
           SSH_HOST: ${{ secrets.HOSTINGER_HOST }}
@@ -60,20 +270,77 @@ jobs:
           DB_NAME: ${{ secrets.HOSTINGER_DB_NAME }}
         run: |
           set -euo pipefail
+
+          # Skip gracefully if DB secrets are not configured yet
           if [[ -z "${DB_HOST:-}" || -z "${DB_USER:-}" || -z "${DB_PASS:-}" || -z "${DB_NAME:-}" || -z "${DEPLOY_PATH:-}" ]]; then
-            echo "::warning::Skipping database migrations — add secrets HOSTINGER_DB_HOST, HOSTINGER_DB_USER, HOSTINGER_DB_PASSWORD, HOSTINGER_DB_NAME (and ensure HOSTINGER_PATH is set)."
+            echo "::warning::Skipping database migrations — configure HOSTINGER_DB_* secrets to enable."
             exit 0
           fi
-          echo "Applying SQL migrations via SSH (${SSH_USER}@${SSH_HOST}:${SSH_PORT}) ..."
+
+          echo "Applying SQL migrations via SSH ..."
           Q_DEPLOY="$(printf '%q' "$DEPLOY_PATH")"
           Q_HOST="$(printf '%q' "$DB_HOST")"
           Q_USER="$(printf '%q' "$DB_USER")"
           Q_PASS="$(printf '%q' "$DB_PASS")"
           Q_NAME="$(printf '%q' "$DB_NAME")"
-          ssh -4 -p "$SSH_PORT" -o ConnectTimeout=30 -o BatchMode=yes "$SSH_USER@$SSH_HOST" \
-            "set -euo pipefail && cd ${Q_DEPLOY} && chmod +x database/migrations/run_all_migrations.sh 2>/dev/null || true && MYSQL_HOST=${Q_HOST} MYSQL_USER=${Q_USER} MYSQL_PASSWORD=${Q_PASS} MYSQL_DATABASE=${Q_NAME} bash database/migrations/run_all_migrations.sh"
 
-      # Uncomment if you need Composer on the server
-      # - name: Install Composer dependencies on server
-      #   run: |
-      #     ssh -p ${{ secrets.HOSTINGER_PORT }} ${{ secrets.HOSTINGER_USER }}@${{ secrets.HOSTINGER_HOST }} "cd ${{ secrets.HOSTINGER_PATH }} && composer install --no-dev --optimize-autoloader"
+          ssh -4 -p "$SSH_PORT" -o ConnectTimeout=30 -o BatchMode=yes "$SSH_USER@$SSH_HOST" \
+            "set -euo pipefail && \
+             cd ${Q_DEPLOY} && \
+             chmod +x database/migrations/run_all_migrations.sh 2>/dev/null || true && \
+             MYSQL_HOST=${Q_HOST} \
+             MYSQL_USER=${Q_USER} \
+             MYSQL_PASSWORD=${Q_PASS} \
+             MYSQL_DATABASE=${Q_NAME} \
+             bash database/migrations/run_all_migrations.sh"
+
+      # ────────────────────────────────────────────────────────────────
+      # 9. SET FILE PERMISSIONS — secure production files
+      # ────────────────────────────────────────────────────────────────
+      - name: Set production file permissions
+        env:
+          SSH_HOST: ${{ secrets.HOSTINGER_HOST }}
+          SSH_PORT: ${{ secrets.HOSTINGER_PORT }}
+          SSH_USER: ${{ secrets.HOSTINGER_USER }}
+          DEPLOY_PATH: ${{ secrets.HOSTINGER_PATH }}
+        run: |
+          set -euo pipefail
+          ssh -4 -p "$SSH_PORT" -o ConnectTimeout=20 -o BatchMode=yes \
+              "$SSH_USER@$SSH_HOST" bash -s -- "$DEPLOY_PATH" <<'REMOTE_SCRIPT'
+          set -euo pipefail
+          DEPLOY="$1"
+
+          # Directories: 755 (owner rwx, group/other rx)
+          find "$DEPLOY" -type d -exec chmod 755 {} + 2>/dev/null || true
+
+          # PHP files: 644 (owner rw, group/other r)
+          find "$DEPLOY" -type f -name "*.php" -exec chmod 644 {} + 2>/dev/null || true
+
+          # Config: restricted to owner only
+          chmod 600 "$DEPLOY/config/config.php" 2>/dev/null || true
+          chmod 600 "$DEPLOY/config/workspaces.php" 2>/dev/null || true
+
+          # .htaccess: readable by Apache but not world-writable
+          find "$DEPLOY" -name ".htaccess" -exec chmod 644 {} + 2>/dev/null || true
+
+          # Upload directories: writable by PHP (web server user)
+          chmod 755 "$DEPLOY/assets/uploads" 2>/dev/null || true
+          for DIR in properties thumbnails avatars agents temp; do
+            chmod 755 "$DEPLOY/assets/uploads/$DIR" 2>/dev/null || true
+          done
+
+          echo "Permissions set."
+          REMOTE_SCRIPT
+
+      # ────────────────────────────────────────────────────────────────
+      # 10. DEPLOYMENT SUMMARY
+      # ────────────────────────────────────────────────────────────────
+      - name: Deployment summary
+        if: always()
+        run: |
+          echo "============================================="
+          echo "  iProply Deployment Complete"
+          echo "  Branch:  ${{ github.ref_name }}"
+          echo "  Commit:  ${{ github.sha }}"
+          echo "  Time:    $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "============================================="

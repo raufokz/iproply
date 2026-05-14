@@ -1,0 +1,61 @@
+# =============================================
+# iProply .gitignore
+# Prevents secrets, uploads, and dev artifacts
+# from entering the repository.
+# =============================================
+
+# ── Environment & secrets ──────────────────
+.env
+.env.*
+*.pem
+*.key
+
+# ── User-uploaded content ──────────────────
+# These directories contain production data
+# (property images, avatars, thumbnails) that
+# must NEVER be committed. They live only on
+# the server and are protected during deploy
+# by rsync exclude rules in deploy.yml.
+assets/uploads/properties/*
+assets/uploads/thumbnails/*
+assets/uploads/avatars/*
+assets/uploads/agents/*
+assets/uploads/temp/*
+!assets/uploads/properties/.gitkeep
+!assets/uploads/thumbnails/.gitkeep
+!assets/uploads/avatars/.gitkeep
+!assets/uploads/agents/.gitkeep
+!assets/uploads/temp/.gitkeep
+
+# ── IDE & OS artifacts ─────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Dependencies ───────────────────────────
+node_modules/
+vendor/
+
+# ── Logs & caches ──────────────────────────
+*.log
+error_log
+cache/
+tmp/
+
+# ── Database dumps (keep out of repo) ──────
+*.sql.gz
+*.sql.bak
+
+# ── One-off dev/migration scripts ──────────
+_fix.php
+check_tables.php
+check_images.php
+import_blogs_from_doc.php
+migrate_blogs.php
+doc_blogs.txt
+index-raw.txt
