@@ -136,7 +136,7 @@ $resourcesNavActive = in_array($currentPage, ['blog', 'mortgage-calculator'], tr
                        aria-haspopup="true"
                        aria-expanded="false"
                        <?php echo $currentPage === 'listings' ? 'aria-current="page"' : ''; ?>>
-                        Listings
+                        Listings test
                         <i class="fas fa-chevron-down" aria-hidden="true"></i>
                     </a>
                     <ul class="dropdown-menu" role="menu" aria-label="Listings submenu">
