@@ -28,7 +28,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $name = trim($_POST['name'] ?? '');
         $email = trim($_POST['email'] ?? '');
-        $phone = trim($_POST['phone'] ?? '');
         $subject = trim($_POST['subject'] ?? '');
         $message = trim($_POST['message'] ?? '');
         
@@ -56,7 +55,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <h2>New Contact Form Submission</h2>
                 <p><strong>Name:</strong> {$name}</p>
                 <p><strong>Email:</strong> {$email}</p>
-                <p><strong>Phone:</strong> {$phone}</p>
                 <p><strong>Subject:</strong> {$subject}</p>
                 <p><strong>Message:</strong></p>
                 <p>" . nl2br(sanitize($message)) . "</p>
@@ -179,16 +177,9 @@ include 'partials/header.php';
                             </div>
                         </div>
                         
-                        <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
-                            <div class="form-group">
-                                <label for="phone">Phone Number</label>
-                                <input type="tel" id="phone" name="phone" value="<?php echo sanitize($_POST['phone'] ?? ''); ?>">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="subject">Subject *</label>
-                                <input type="text" id="subject" name="subject" required value="<?php echo sanitize($_POST['subject'] ?? ($_GET['subject'] ?? '')); ?>">
-                            </div>
+                        <div class="form-group" style="margin-top: 1rem;">
+                            <label for="subject">Subject *</label>
+                            <input type="text" id="subject" name="subject" required value="<?php echo sanitize($_POST['subject'] ?? ($_GET['subject'] ?? '')); ?>">
                         </div>
                         
                         <div class="form-group" style="margin-top: 1rem;">
