@@ -175,5 +175,13 @@ require_once __DIR__ . '/../includes/footer-routes.php';
         });
     })();
     </script>
+
+    <!-- LeadConnector chat widget -->
+    <script
+        src="https://widgets.leadconnectorhq.com/loader.js"
+        data-resources-url="https://widgets.leadconnectorhq.com/chat-widget/loader.js"
+        data-widget-id="6a0784f48a1d10efd80063f7"
+        data-source="WEB_USER"
+    ></script>
 </body>
 </html>
